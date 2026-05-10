@@ -18,6 +18,16 @@ Before first use, configure the Obsidian vault path:
 
 ## Orchestration Flow
 
+## Pre-Task Initialization
+
+Before starting any new Study System task (Phase 0), internalize past learnings:
+
+1. Read `.learnings/RULES.md` — compact, actionable rules from past sessions
+2. Note what to do, what to avoid, what patterns to watch for
+3. Do NOT read raw `.learnings/LEARNINGS.md` or `.learnings/ERRORS.md` — those are for the digest agent only
+
+If `.learnings/RULES.md` doesn't exist yet (first run), skip this step.
+
 ### Phase 0: Requirement Clarification + Path Confirmation
 
 When user expresses intent to learn something, ask in two rounds:
@@ -99,37 +109,73 @@ Write plan to `{SYSTEM_ROOT}/4-meta/execution-log.md`:
 5. Repeat 2-4 until user approves
 6. User: confirm → proceed to Phase 5 (if desired)
 
-### Phase 5 (Optional): Evaluate (质量评估)
+### Phase 5 (Optional): Evaluate + Self-Improvement (质量评估 + 自我学习)
 
-1. Ask: "Evaluate this note's quality?"
-2. If yes, invoke the `evaluate` subagent — it will score on 5 dimensions (completeness, accuracy, readability, practicality, connectivity), write report to `4-meta/evaluation/{topic}-eval.md`
-3. Present results and improvement suggestions
+1. Ask: "Evaluate this note's quality and capture learnings?"
+2. If yes, invoke the `evaluate` agent — it will:
+   - Score on 5 dimensions (completeness, accuracy, readability, practicality, connectivity)
+   - Cross-validate claims against curated source materials
+   - Write evaluation report to `4-meta/evaluation/{topic}-eval.md`
+   - Log session learnings and errors to `.learnings/LEARNINGS.md` and `.learnings/ERRORS.md`
+3. Present evaluation results, improvement suggestions, and captured learnings summary
 
-### Post-Phase 5: Self-Improvement (自我学习)
+## Error Handling (Phase 1-4)
 
-After all phases (including optional evaluate) are complete, invoke the self-improving agent:
+During Phase 1-4 execution, if any error occurs or you manually intervene to correct the model's output, **record only, do not analyze**. Append a plain-text entry to `{SYSTEM_ROOT}/4-meta/error-log.md`:
 
 ```
-Skill({skill: "self-improving-agent"})
+[YYYY-MM-DD HH:MM] {phase} - {brief description of what went wrong}
+{correction taken, if any}
 ```
 
-This captures learnings, errors, and corrections from the entire session to improve future Study System runs.
+Rules:
+- Plain text only — no markdown headers, no bold, no analysis
+- One entry per incident, separated by blank line
+- Just state what happened and what was done — no root cause analysis, no impact assessment
+- After recording, ask user how to proceed (retry / skip / abort / manual fix)
 
-## Error Handling
+## Learnings Digest
 
-**Every phase must report issues back to Claude Code.** When any anomaly occurs during a phase (skill/subagent failure, empty output, data inconsistency, permission error, etc.):
+To prevent `.learnings/` files from growing unbounded, the evaluate agent runs a digest cycle when thresholds are exceeded.
 
-1. **Report immediately** — describe the issue, impact, and what action was taken
-2. **Write to error log** — append to `{SYSTEM_ROOT}/4-meta/error-log.md`:
+### Thresholds
+
+| File | Threshold | Action |
+|------|-----------|--------|
+| `.learnings/LEARNINGS.md` | > 100 lines | Compress before logging new entries |
+| `.learnings/ERRORS.md` | > 100 lines | Compress before logging new entries |
+| `.learnings/RULES.md` | > 50 lines | Review and promote to CLAUDE.md, trim RULES.md |
+
+### Digest Process
+
+When triggered (in evaluate agent Step 7):
+
+1. Read all entries in `.learnings/LEARNINGS.md` and `.learnings/ERRORS.md`
+2. Group similar entries, deduplicate, extract patterns
+3. Write compact rules to `.learnings/RULES.md`:
+   - One rule per line under `## Do` / `## Don't` / `## Watch For`
+   - Merge recurring entries with a counter: `(3x) Use X not Y`
+   - Drop one-off noise that never recurred
+4. Promote critical rules to CLAUDE.md if they affect the core orchestration flow
+5. Archive old entries to `.learnings/archive/YYYY-MM-DD.md`
+6. Truncate `.learnings/LEARNINGS.md` and `.learnings/ERRORS.md` — keep headers only
+
+### RULES.md Format
+
 ```markdown
-## [{timestamp}] {phase} phase anomaly
-- **Issue**: {description}
-- **Impact**: {what's affected}
-- **Action**: {what was done}
-```
-3. **Ask user** how to proceed (retry / skip / abort / manual fix)
+# Rules
+Compressed, deduplicated learnings from past sessions.
 
-This applies to all phases: collect, curate, write, beautify, evaluate.
+## Do
+- Prefer X over Y for Z scenarios (2x)
+- Always check A before B (3x)
+
+## Don't
+- Never skip cross-validation (2x)
+
+## Watch For
+- opencli adapters can return empty results for Chinese queries
+```
 
 ## Quality Gates
 

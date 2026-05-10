@@ -1,9 +1,9 @@
 ---
 name: evaluate
-description: Use this agent when the user wants to evaluate a study note's quality after beautify. It scores completeness, accuracy, readability, practicality, and connectivity (each 0-10), cross-validates against curated source materials, and generates an evaluation report with specific improvement suggestions.
+description: Use this agent after beautify to evaluate note quality and capture session learnings. Scores 5 dimensions (completeness, accuracy, readability, practicality, connectivity) each 0-10, cross-validates against curated sources, writes evaluation report, and logs learnings/errors to .learnings/ for continuous improvement.
 model: sonnet
 tools: [Read, Grep, Glob, Write, Bash]
-maxTurns: 25
+maxTurns: 30
 color: yellow
 permissionMode: acceptEdits
 ---
@@ -119,3 +119,97 @@ grade: {grade}
 - Never skip cross-validation against curated sources
 - Never give vague feedback — always cite specific examples from the note
 - Keep the report concise — one evaluation file, no sprawling
+
+## Step 7: Log Session Learnings (Self-Improvement)
+
+After the evaluation report is written, capture learnings from this Study System session.
+
+### 7a: Check digest thresholds
+
+Before logging new entries, check if compression is needed:
+
+```bash
+wc -l .learnings/LEARNINGS.md .learnings/ERRORS.md 2>/dev/null || echo "0 .learnings/LEARNINGS.md\n0 .learnings/ERRORS.md"
+```
+
+If either file exceeds 100 lines, run the digest cycle first:
+
+1. Read all entries in `.learnings/LEARNINGS.md` and `.learnings/ERRORS.md`
+2. Group similar entries by topic/pattern, deduplicate
+3. Write/update `.learnings/RULES.md`:
+   - `## Do` — patterns to follow
+   - `## Don't` — mistakes to avoid
+   - `## Watch For` — situations that need extra care
+   - One rule per line, merge recurrences: `(3x) Use pnpm not npm`
+   - Drop one-off noise that only appeared once
+4. If any rule is critical to the core Study System flow, promote it to CLAUDE.md
+5. Archive old entries to `.learnings/archive/YYYY-MM-DD.md`
+6. Truncate `.learnings/LEARNINGS.md` and `.learnings/ERRORS.md` to headers only
+
+### 7b: Ensure `.learnings/` directory exists
+
+```bash
+mkdir -p .learnings
+```
+
+If `.learnings/LEARNINGS.md` or `.learnings/ERRORS.md` don't exist, create them with minimal headers.
+
+### 7c: Review the session for learnings
+
+Scan the evaluation findings and any issues encountered during the session:
+- Were any claims inaccurate? → Log to `.learnings/LEARNINGS.md` as `correction`
+- Did curated sources have gaps? → Log to `.learnings/LEARNINGS.md` as `knowledge_gap`
+- Were there any errors during collect/curate/write/beautify? → Log to `.learnings/ERRORS.md`
+- Any patterns worth noting for future Study System runs? → Log to `.learnings/LEARNINGS.md` as `best_practice`
+
+### 7d: Log entries
+
+Use the self-improving-agent format for entries:
+
+**Learning entry** (append to `.learnings/LEARNINGS.md`):
+```markdown
+## [LRN-YYYYMMDD-XXX] category
+
+**Logged**: ISO-8601 timestamp
+**Priority**: low | medium | high
+**Status**: pending
+**Area**: docs
+
+### Summary
+One-line description
+
+### Details
+What happened, what was learned
+
+### Suggested Action
+What to do differently next time
+
+---
+```
+
+**Error entry** (append to `.learnings/ERRORS.md`):
+```markdown
+## [ERR-YYYYMMDD-XXX] phase_name
+
+**Logged**: ISO-8601 timestamp
+**Priority**: high
+**Status**: pending
+**Area**: docs
+
+### Summary
+Brief description of what failed
+
+### Error
+```
+Actual error message
+```
+
+### Context
+What was being attempted
+
+---
+```
+
+### 7e: Log only if meaningful
+
+If the session had no errors and no notable learnings, skip logging — do not create empty entries. Quality is more important than quantity.
