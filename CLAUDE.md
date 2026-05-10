@@ -4,11 +4,43 @@ This repository contains the **Study System** — a semi-automated technical lea
 
 ## How It Works
 
-1. User says "I want to learn X" or "I want to write about my experience with X"
+1. User says "I want to learn X" or "I want to write about my experience with X" — use [Resource Discovery](#resource-discovery规则寻址) glob patterns to locate the right skill/agent
 2. For research-driven notes: Main Claude orchestrates 5 phases: collect → curate → write → beautify → evaluate
 3. For experience notes (心得笔记): user provides content → review → optional research → write → beautify → evaluate
 4. Each phase reads/writes files under `{VAULT_PATH}/StudySystem/`
 5. User reviews and approves at each phase boundary
+
+## Resource Discovery（规则寻址）
+
+Claude 使用 glob 模式发现项目资源，无需硬编码路径。新增资源时放入对应目录并写好 frontmatter `description`，Claude 自动可发现。
+
+### Skills
+
+- 发现: `Glob .claude/skills/*/SKILL.md`
+- 匹配: 读每个 skill 的 YAML frontmatter `description` 字段，匹配用户意图
+- 调用: `Skill(skill="{name}")` — skill 名称取目录名
+
+### Agents
+
+- 发现: `Glob .claude/agents/*.md`
+- 匹配: 读每个 agent 的 YAML frontmatter `name`、`description`、`tools` 字段
+- 调用: `Agent(subagent_type="{name}")` — agent 名称取 frontmatter `name`
+
+### Templates
+
+- 发现: `Glob templates/*.md`
+- 匹配: 读 frontmatter `type` 字段（concept / practice / compare / cheat-sheet / experience）
+- 使用: Read 后按模板结构填充内容
+
+### Learnings
+
+- 发现: `Glob .learnings/RULES.md`
+- 使用: 每次新任务前 Read，内化 Do / Don't / Watch For
+
+### 配置
+
+- 发现: `Glob .obsidian-config.md`
+- 使用: Read 获取 Obsidian vault 路径
 
 ## Configuration
 
