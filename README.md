@@ -17,7 +17,7 @@ Phase 3 · write    → 选模板、提取关键信息、生成笔记初稿
   ↓
 Phase 4 · beautify → Obsidian Markdown 美化、双链、标签、图表
   ↓
-Phase 5 · evaluate → 五维评分（可选），输出改进建议
+Phase 5 · evaluate → 五维评分 + 自我学习（可选）
 ```
 
 每个阶段完成后暂停，等待你审核确认再继续。
@@ -74,15 +74,21 @@ cd study-system
 
 最终笔记可输出到 Vault 任意位置（Phase 0 由你指定），不限于 `3-published/`。
 
-## 5 个核心 Skill
+本仓库还包含：
+- `.claude/skills/` — 15 个 Skill 定义文件
+- `.claude/agents/` — evaluate 子代理定义
+- `.learnings/` — 自我学习记录，驱动持续改进
 
-| Skill | 职责 | 输入 | 产出 |
-|-------|------|------|------|
-| **collect** | 搜索收集原始资料 | 学习主题 + 方向 + 深度 | `0-inbox/{topic}/` |
-| **curate** | 打分、去重、分类、标记缺口 | 原始资料 | `1-curated/{topic}/` |
-| **write** | 选模板生成笔记初稿 | 整理资料 + 笔记类型 | `2-drafts/{topic}/` |
-| **beautify** | Obsidian 美化排版 | 笔记初稿 | 最终笔记 `.md` |
-| **evaluate** | 五维质量评估（可选） | 最终笔记 | `4-meta/evaluation/` |
+## 6 个核心 Skill
+
+| Skill | 阶段 | 职责 |
+|-------|------|------|
+| **collect** | Phase 1 | 搜索收集原始资料，保存到 `0-inbox/` |
+| **curate** | Phase 2 | 打分、去重、分类、标记缺口，输出知识地图 |
+| **write** | Phase 3 | 选模板生成笔记初稿到 `2-drafts/` |
+| **beautify** | Phase 4 | Obsidian 美化排版，输出到用户指定路径 |
+| **evaluate** | Phase 5 | 五维质量评估 + 自我学习捕获（子代理） |
+| **update** | 维护 | 更新已有笔记，支持插入新内容和刷新过时内容 |
 
 ## 笔记类型
 
@@ -90,6 +96,14 @@ cd study-system
 - **实战笔记** — 目标 → 环境准备 → 分步操作 → 踩坑记录
 - **对比笔记** — 并列对比多个方案的优劣势和适用场景
 - **速查表** — 精简的 Cheat Sheet，适合快速查阅
+
+## 自我学习机制
+
+系统通过 `.learnings/` 持续改进：
+
+- **RULES.md** — 每次新任务前读取，包含压缩提炼的行动规则
+- **LEARNINGS.md / ERRORS.md** — 每次评估后记录经验教训
+- **Digest 循环** — 当文件超过阈值时自动压缩、去重、提炼规则
 
 ## 设计原则
 
