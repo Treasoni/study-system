@@ -105,15 +105,31 @@ Write plan to `{SYSTEM_ROOT}/4-meta/execution-log.md`:
 2. If yes, invoke the `evaluate` subagent — it will score on 5 dimensions (completeness, accuracy, readability, practicality, connectivity), write report to `4-meta/evaluation/{topic}-eval.md`
 3. Present results and improvement suggestions
 
+### Post-Phase 5: Self-Improvement (自我学习)
+
+After all phases (including optional evaluate) are complete, invoke the self-improving agent:
+
+```
+Skill({skill: "self-improving-agent"})
+```
+
+This captures learnings, errors, and corrections from the entire session to improve future Study System runs.
+
 ## Error Handling
 
-All anomalies are written to `{SYSTEM_ROOT}/4-meta/error-log.md`:
+**Every phase must report issues back to Claude Code.** When any anomaly occurs during a phase (skill/subagent failure, empty output, data inconsistency, permission error, etc.):
+
+1. **Report immediately** — describe the issue, impact, and what action was taken
+2. **Write to error log** — append to `{SYSTEM_ROOT}/4-meta/error-log.md`:
 ```markdown
 ## [{timestamp}] {phase} phase anomaly
 - **Issue**: {description}
 - **Impact**: {what's affected}
 - **Action**: {what was done}
 ```
+3. **Ask user** how to proceed (retry / skip / abort / manual fix)
+
+This applies to all phases: collect, curate, write, beautify, evaluate.
 
 ## Quality Gates
 
