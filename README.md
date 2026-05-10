@@ -75,7 +75,7 @@ cd study-system
 最终笔记可输出到 Vault 任意位置（Phase 0 由你指定），不限于 `3-published/`。
 
 本仓库还包含：
-- `.claude/skills/` — 15 个 Skill 定义文件
+- `.claude/skills/` — 16 个 Skill 定义文件
 - `.claude/agents/` — evaluate 子代理定义
 - `.learnings/` — 自我学习记录，驱动持续改进
 
