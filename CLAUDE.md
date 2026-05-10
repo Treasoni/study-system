@@ -93,13 +93,16 @@ Write plan to `{SYSTEM_ROOT}/4-meta/execution-log.md`:
 ### Phase 4: Beautify (美化排版)
 
 1. Invoke `/beautify` — it will apply Obsidian Markdown formatting, add wikilinks, tags, callouts, Mermaid diagrams, write final note to the user-specified output path
-2. Present final result to user
-3. User: confirm / fine-tune
+2. Present final result to user → **Pause here. Do not proceed.** Ask: "Any changes needed?"
+3. User reviews and may request modifications
+4. When user gives feedback: **implement minimal, targeted fixes only** — do NOT regenerate the entire note. Fix just what was flagged, keeping other content untouched
+5. Repeat 2-4 until user approves
+6. User: confirm → proceed to Phase 5 (if desired)
 
 ### Phase 5 (Optional): Evaluate (质量评估)
 
 1. Ask: "Evaluate this note's quality?"
-2. If yes, invoke `/evaluate` — it will score on 5 dimensions (completeness, accuracy, readability, practicality, connectivity), write report to `4-meta/evaluation/{topic}-eval.md`
+2. If yes, invoke the `evaluate` subagent — it will score on 5 dimensions (completeness, accuracy, readability, practicality, connectivity), write report to `4-meta/evaluation/{topic}-eval.md`
 3. Present results and improvement suggestions
 
 ## Error Handling
