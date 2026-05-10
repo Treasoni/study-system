@@ -10,7 +10,8 @@
       "Bash(python -c \"import json,sys; data=json.load\\(sys.stdin\\); sites=set\\(d['site'] for d in data\\); [print\\(s\\) for s in sorted\\(sites\\)]\")",
       "Bash(node -e \"const d=require\\('fs'\\).readFileSync\\('/dev/stdin','utf8'\\);const j=JSON.parse\\(d\\);const s=new Set\\(j.map\\(x=>x.site\\)\\);[...s].sort\\(\\).forEach\\(x=>console.log\\(x\\)\\)\")",
       "Bash(node -e \"const j=JSON.parse\\(require\\('fs'\\).readFileSync\\('/tmp/opencli_list.json','utf8'\\)\\);const s=new Set\\(j.map\\(x=>x.site\\)\\);[...s].sort\\(\\).forEach\\(x=>console.log\\(x\\)\\)\")",
-      "WebSearch"
+      "WebSearch",
+      "Bash(git commit *)"
     ],
     "additionalDirectories": [
       "c:\\code\\study_system",
