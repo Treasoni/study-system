@@ -10,6 +10,13 @@ This repository contains the **Study System** — a semi-automated technical lea
 4. Each phase reads/writes files under `{VAULT_PATH}/StudySystem/`
 5. User reviews and approves at each phase boundary
 
+## Phase Boundary Rules (CRITICAL)
+
+After completing ANY phase, you MUST STOP. DO NOT invoke the next phase's skill.
+Present results to the user and WAIT for explicit confirmation (e.g. "继续", "proceed", "进入下一阶段").
+
+NEVER chain phases together. NEVER skip a phase. NEVER assume user approval.
+
 ## Resource Discovery（规则寻址）
 
 Claude 使用 glob 模式发现项目资源，无需硬编码路径。新增资源时放入对应目录并写好 frontmatter `description`，Claude 自动可发现。
@@ -125,7 +132,7 @@ Write plan to `{SYSTEM_ROOT}/4-meta/execution-log.md`:
    - How many sources collected
    - Which sub-topics are covered
    - Any obvious gaps
-3. User: confirm / supplement / re-collect
+3. **STOP here. DO NOT invoke `/curate`.** Wait for user to explicitly say "继续" or "进入下一阶段".
 
 ### Phase 2: Curate (资料整理)
 
@@ -134,7 +141,7 @@ Write plan to `{SYSTEM_ROOT}/4-meta/execution-log.md`:
    - Knowledge map overview
    - Which sources were discarded and why
    - Which sub-topics lack sufficient material
-3. User: confirm / adjust / supplement then redo
+3. **STOP here. DO NOT invoke `/write`.** Wait for user to explicitly confirm.
 
 ### Phase 3: Write (生成笔记)
 
@@ -144,12 +151,12 @@ Write plan to `{SYSTEM_ROOT}/4-meta/execution-log.md`:
    - Structure review
    - Accuracy check
    - Any missing content
-4. User: confirm / modify / rewrite
+4. **STOP here. DO NOT invoke `/beautify`.** Wait for user to explicitly confirm.
 
 ### Phase 4: Beautify (美化排版)
 
 1. Invoke `/beautify` — it will apply Obsidian Markdown formatting, add wikilinks, tags, callouts, Mermaid diagrams, write final note to the user-specified output path
-2. Present final result to user → **Pause here. Do not proceed.** Ask: "Any changes needed?"
+2. **STOP. DO NOT invoke `/evaluate`. DO NOT proceed to Phase 5.** Present final result and ask: "Any changes needed?" Wait for user to explicitly confirm before proceeding.
 3. User reviews and may request modifications
 4. When user gives feedback: **implement minimal, targeted fixes only** — do NOT regenerate the entire note. Fix just what was flagged, keeping other content untouched
 5. Repeat 2-4 until user approves
@@ -157,7 +164,7 @@ Write plan to `{SYSTEM_ROOT}/4-meta/execution-log.md`:
 
 ### Phase 5 (Optional): Evaluate + Self-Improvement (质量评估 + 自我学习)
 
-1. Ask: "Evaluate this note's quality and capture learnings?"
+1. DO NOT auto-evaluate. Ask the user: "Evaluate this note's quality and capture learnings?" Only invoke evaluate agent if user explicitly says yes.
 2. If yes, invoke the `evaluate` agent — it will:
    - Score on 5 dimensions (completeness, accuracy, readability, practicality, connectivity)
    - Cross-validate claims against curated source materials
