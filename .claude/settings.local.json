@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mkdir -p c:/code/study_system/skills c:/code/study_system/templates)",
+      "Bash(mkdir -p c:/code/study_system/.claude/skills/collect c:/code/study_system/.claude/skills/curate c:/code/study_system/.claude/skills/write c:/code/study_system/.claude/skills/beautify c:/code/study_system/.claude/skills/evaluate)",
+      "Bash(git add *)"
+    ],
+    "additionalDirectories": [
+      "c:\\code\\study_system",
+      "c:\\code\\study_system\\.claude\\skills"
+    ]
+  }
+}
