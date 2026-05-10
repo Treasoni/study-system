@@ -85,7 +85,7 @@ cd study-system
 
 本仓库还包含：
 - `.claude/skills/` — 16 个 Skill 定义文件
-- `.claude/agents/` — evaluate 子代理定义
+- `.claude/agents/` — 1 个子代理（evaluate 评估代理）
 - `.learnings/` — 自我学习记录，驱动持续改进
 
 ## 6 个核心 Skill
