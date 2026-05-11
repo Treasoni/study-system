@@ -4,6 +4,7 @@
 
 ## 工作流程
 
+**研究驱动型（概念/实战/对比/速查）：**
 ```
 用户："我想学 React Hooks"
   ↓
@@ -18,6 +19,13 @@ Phase 3 · write    → 选模板、提取关键信息、生成笔记初稿
 Phase 4 · beautify → Obsidian Markdown 美化、双链、标签、图表
   ↓
 Phase 5 · evaluate → 五维评分 + 自我学习（可选）
+```
+
+**心得笔记（用户经验驱动）：**
+```
+用户："我想写一篇关于 XX 的心得笔记"
+  ↓
+用户提供原始内容 → 审核准确性 → 可选补充研究 → write → beautify → evaluate
 ```
 
 每个阶段完成后暂停，等待你审核确认再继续。
@@ -48,11 +56,12 @@ cd study-system
 
 ```
 {VAULT_PATH}/StudySystem/
-├── templates/          # 4 种笔记模板
+├── templates/          # 5 种笔记模板
 │   ├── concept-template.md       # 概念理解
 │   ├── practice-template.md      # 实战上手
 │   ├── compare-template.md       # 对比分析
-│   └── cheat-sheet-template.md   # 速查表
+│   ├── cheat-sheet-template.md   # 速查表
+│   └── experience-template.md    # 心得笔记
 │
 ├── 0-inbox/            # Phase 1 产出：原始资料
 │   └── {topic}/
@@ -96,6 +105,7 @@ cd study-system
 - **实战笔记** — 目标 → 环境准备 → 分步操作 → 踩坑记录
 - **对比笔记** — 并列对比多个方案的优劣势和适用场景
 - **速查表** — 精简的 Cheat Sheet，适合快速查阅
+- **心得笔记** — 用户提供项目经验，系统审核准确性、补充研究、生成结构化笔记
 
 ## 自我学习机制
 
