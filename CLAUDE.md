@@ -51,22 +51,40 @@ Claude 使用 glob 模式发现项目资源，无需硬编码路径。新增资�
 
 ## Configuration
 
-Before first use, configure the Obsidian vault path:
-- Read `.obsidian-config.md` from this repo
-- Ask user for their Obsidian vault path
-- Write it to `{VAULT_PATH}/StudySystem/.obsidian-config.md`
+Vault path is set in `.obsidian-config.md`. On first run, Pre-Task Initialization
+detects an empty VAULT_PATH and prompts you to set it.
 
 ## Orchestration Flow
 
 ## Pre-Task Initialization
 
-Before starting any new Study System task (Phase 0), internalize past learnings:
+Before starting any new Study System task (Phase 0), resolve the vault path
+and internalize past learnings.
+
+### Vault Path Validation (Critical Gate)
+
+1. Read `.obsidian-config.md`
+2. Check the `VAULT_PATH:` value:
+   - **Empty**: this is the first run. Proactively ask the user:
+     - "This appears to be your first time using the Study System. I need your Obsidian vault path to proceed."
+     - "Please provide the absolute path to your Obsidian vault (e.g., `/Users/name/obsidian` or `C:/Users/name/obsidian`)."
+     - After user provides a path, write it to `.obsidian-config.md`:
+       ```
+       VAULT_PATH: "/the/path"
+       ```
+     - Re-read `.obsidian-config.md` to confirm
+     - If still empty, STOP — do not proceed without a valid path
+   - **Non-empty**: validate the directory exists:
+     - `ls "{VAULT_PATH}"` — if missing, warn the user and ask for correction
+3. Resolve `SYSTEM_ROOT` and `OUTPUT_PATH` from the config values. All subsequent
+   path references must use the resolved values.
+
+### Internalize Past Learnings
 
 1. Read `.learnings/RULES.md` — compact, actionable rules from past sessions
 2. Note what to do, what to avoid, what patterns to watch for
-3. Do NOT read raw `.learnings/LEARNINGS.md` or `.learnings/ERRORS.md` — those are for the digest agent only
 
-If `.learnings/RULES.md` doesn't exist yet (first run), skip this step.
+If `.learnings/RULES.md` doesn't exist yet, skip this step.
 
 ### Phase 0: Requirement Clarification + Path Confirmation
 
@@ -162,15 +180,14 @@ Write plan to `{SYSTEM_ROOT}/4-meta/execution-log.md`:
 5. Repeat 2-4 until user approves
 6. User: confirm → proceed to Phase 5 (if desired)
 
-### Phase 5 (Optional): Evaluate + Self-Improvement (质量评估 + 自我学习)
+### Phase 5 (Optional): Evaluate (质量评估)
 
-1. DO NOT auto-evaluate. Ask the user: "Evaluate this note's quality and capture learnings?" Only invoke evaluate agent if user explicitly says yes.
-2. If yes, invoke the `evaluate` agent — it will:
+1. DO NOT auto-evaluate. Ask the user: "Evaluate this note's quality?" Only invoke evaluate skill if user explicitly says yes.
+2. If yes, invoke the `evaluate` skill — it will:
    - Score on 5 dimensions (completeness, accuracy, readability, practicality, connectivity)
    - Cross-validate claims against curated source materials
    - Write evaluation report to `4-meta/evaluation/{topic}-eval.md`
-   - Log session learnings and errors to `.learnings/LEARNINGS.md` and `.learnings/ERRORS.md`
-3. Present evaluation results, improvement suggestions, and captured learnings summary
+3. Present evaluation results and improvement suggestions
 
 ## Experience Notes (心得笔记)
 
@@ -211,7 +228,7 @@ Invoke `/write` with note type `experience`. The write skill uses `experience-te
 Same as Phase 4 — apply Obsidian formatting, write to user-specified output path. User reviews and approves.
 
 **Step 6: Optional evaluate**
-Same as Phase 5 — score quality, cross-validate, capture learnings.
+Same as Phase 5 — score quality, cross-validate.
 
 ### When the User is Unsure About Research
 
@@ -265,7 +282,11 @@ Rules:
 
 ## Learnings Digest
 
-To prevent `.learnings/` files from growing unbounded, the evaluate agent runs a digest cycle when thresholds are exceeded.
+> **Note**: This section documents the digest process for reference. LEARNINGS.md and
+> ERRORS.md are no longer auto-populated by the pipeline. The digest process can be
+> run manually if entries exist.
+
+To prevent `.learnings/` files from growing unbounded, a digest cycle can be run when thresholds are exceeded.
 
 ### Thresholds
 
@@ -277,7 +298,7 @@ To prevent `.learnings/` files from growing unbounded, the evaluate agent runs a
 
 ### Digest Process
 
-When triggered (in evaluate agent Step 7):
+When triggered manually:
 
 1. Read all entries in `.learnings/LEARNINGS.md` and `.learnings/ERRORS.md`
 2. Group similar entries, deduplicate, extract patterns
