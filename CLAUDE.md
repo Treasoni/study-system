@@ -5,8 +5,8 @@ This repository contains the **Study System** — a semi-automated technical lea
 ## How It Works
 
 1. User says "I want to learn X" or "I want to write about my experience with X" — use [Resource Discovery](#resource-discovery规则寻址) glob patterns to locate the right skill/agent
-2. For research-driven notes: Main Claude orchestrates 5 phases: collect → curate → write → beautify → evaluate
-3. For experience notes (心得笔记): user provides content → review → optional research → write → beautify → evaluate
+2. For research-driven notes: Main Claude orchestrates 6 phases: collect → curate → write → beautify → evaluate → [digest]
+3. For experience notes (心得笔记): user provides content → review → optional research → write → beautify → evaluate → [digest]
 4. Each phase reads/writes files under `{VAULT_PATH}/StudySystem/`
 5. User reviews and approves at each phase boundary
 
@@ -117,7 +117,7 @@ For research-driven notes (概念/实战/对比/速查):
 - Depth: {depth}
 - Note type: {note_type}
 - Output path: {output_path}
-- Phases: collect → curate → write → beautify → [evaluate]
+- Phases: collect → curate → write → beautify → [evaluate] → [digest]
 
 Proceed?
 ```
@@ -128,7 +128,7 @@ For experience notes (心得笔记):
 - Topic: {topic}
 - Note type: 心得笔记
 - Output path: {output_path}
-- Phases: user input → review → [optional research] → write → beautify → [evaluate]
+- Phases: user input → review → [optional research] → write → beautify → [evaluate] → [digest]
 
 Proceed?
 ```
@@ -189,6 +189,15 @@ Write plan to `{SYSTEM_ROOT}/4-meta/execution-log.md`:
    - Write evaluation report to `4-meta/evaluation/{topic}-eval.md`
 3. Present evaluation results and improvement suggestions
 
+### Phase 6 (Optional): Digest (自我学习)
+
+1. DO NOT auto-digest. Ask the user: "Capture session learnings for continuous improvement?" Only invoke digest skill if user explicitly says yes.
+2. If yes, invoke the `digest` skill — it will:
+   - Review the session for learnings and errors
+   - Log entries to `.learnings/LEARNINGS.md` and `.learnings/ERRORS.md`
+   - Run digest compression if thresholds exceeded
+3. Present captured learnings summary
+
 ## Experience Notes (心得笔记)
 
 When the user selects "心得笔记" in Phase 0, the workflow is **user-input-first** instead of research-first. The content comes from the user's own project experiences and insights, not external research.
@@ -229,6 +238,9 @@ Same as Phase 4 — apply Obsidian formatting, write to user-specified output pa
 
 **Step 6: Optional evaluate**
 Same as Phase 5 — score quality, cross-validate.
+
+**Step 7: Optional digest**
+Same as Phase 6 — log session learnings.
 
 ### When the User is Unsure About Research
 
@@ -282,11 +294,7 @@ Rules:
 
 ## Learnings Digest
 
-> **Note**: This section documents the digest process for reference. LEARNINGS.md and
-> ERRORS.md are no longer auto-populated by the pipeline. The digest process can be
-> run manually if entries exist.
-
-To prevent `.learnings/` files from growing unbounded, a digest cycle can be run when thresholds are exceeded.
+To prevent `.learnings/` files from growing unbounded, the digest skill runs a digest cycle when thresholds are exceeded.
 
 ### Thresholds
 
