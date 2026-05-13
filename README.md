@@ -84,11 +84,12 @@ cd study-system
 最终笔记可输出到 Vault 任意位置（Phase 0 由你指定），不限于 `3-published/`。
 
 本仓库还包含：
-- `.claude/skills/` — 16 个 Skill 定义文件
-- `.claude/agents/` — 1 个子代理（evaluate 评估代理）
+- `.claude/skills/` — 多个 Skill 定义文件（通过 glob 动态发现）
 - `.learnings/` — 自我学习记录，驱动持续改进
+- `docs/` — 系统设计文档和详细工作流说明
+- `scripts/validate-structure.sh` — 结构完整性验证脚本
 
-## 6 个核心 Skill
+## 核心 Skill
 
 | Skill | 阶段 | 职责 |
 |-------|------|------|
@@ -96,7 +97,7 @@ cd study-system
 | **curate** | Phase 2 | 打分、去重、分类、标记缺口，输出知识地图 |
 | **write** | Phase 3 | 选模板生成笔记初稿到 `2-drafts/` |
 | **beautify** | Phase 4 | Obsidian 美化排版，输出到用户指定路径 |
-| **evaluate** | Phase 5 | 五维质量评估 + 自我学习捕获（子代理） |
+| **evaluate** | Phase 5 | 五维质量评估 + 自我学习捕获 |
 | **update** | 维护 | 更新已有笔记，支持插入新内容和刷新过时内容 |
 
 ## 笔记类型
@@ -115,6 +116,8 @@ cd study-system
 - **LEARNINGS.md / ERRORS.md** — 每次评估后记录经验教训
 - **Digest 循环** — 当文件超过阈值时自动压缩、去重、提炼规则
 
+详见 [docs/learnings-digest.md](docs/learnings-digest.md)。
+
 ## 设计原则
 
 - 所有系统文件归入 `StudySystem/`，不污染 Vault 根目录
@@ -122,3 +125,7 @@ cd study-system
 - 数据通过文件传递，每个阶段的产出是下一阶段的输入
 - 每个阶段后由你审核，不搞全自动
 - 优先官方文档和一手资料，所有来源可追溯
+
+## 贡献者
+
+运行 `bash scripts/validate-structure.sh` 验证系统结构完整性。详细设计文档见 [docs/](docs/)。
