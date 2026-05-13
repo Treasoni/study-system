@@ -13,11 +13,13 @@
       "WebSearch",
       "Bash(git commit *)",
       "Bash(git fetch *)",
-      "Bash(bash c:/code/study-system/scripts/validate-structure.sh)"
+      "Bash(bash c:/code/study-system/scripts/validate-structure.sh)",
+      "Bash(mkdir -p c:/code/study-system/.claude/skills/delete-file c:/code/study-system/.claude/skills/generate-links)"
     ],
     "additionalDirectories": [
       "c:\\code\\study_system",
-      "c:\\code\\study_system\\.claude\\skills"
+      "c:\\code\\study_system\\.claude\\skills",
+      "c:\\code\\study-system\\.claude\\skills"
     ]
   }
 }
