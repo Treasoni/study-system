@@ -14,7 +14,8 @@
       "Bash(git commit *)",
       "Bash(git fetch *)",
       "Bash(bash c:/code/study-system/scripts/validate-structure.sh)",
-      "Bash(mkdir -p c:/code/study-system/.claude/skills/delete-file c:/code/study-system/.claude/skills/generate-links)"
+      "Bash(mkdir -p c:/code/study-system/.claude/skills/delete-file c:/code/study-system/.claude/skills/generate-links)",
+      "Bash(mkdir -p c:/code/study-system/.claude/skills/fix-broken-links)"
     ],
     "additionalDirectories": [
       "c:\\code\\study_system",
