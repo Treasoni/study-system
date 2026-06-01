@@ -103,19 +103,10 @@ autonomy:
 
 本仓库还包含：
 - `.claude/skills/` — 多个 Skill 定义文件（通过 glob 动态发现）
-- `lib/` — 核心模块（配置、自治、推断、调度）
+- `.claude/agents/` — Subagent 定义（collector、curator、writer、beautifier）
 - `.learnings/` — 自我学习记录，驱动持续改进
 - `docs/` — 系统设计文档和详细工作流说明
 - `scripts/validate-structure.sh` — 结构完整性验证脚本
-
-## 核心模块
-
-| 模块 | 文件 | 职责 |
-|------|------|------|
-| **配置系统** | `lib/config-loader.js` | 读取 `.study-config.yaml`，支持自治级别等配置 |
-| **自治管理** | `lib/autonomy-manager.js` | Level 0-3 四级控制，决定何时需要用户确认 |
-| **类型推断** | `lib/note-type-inferrer.js` | 根据用户答案推断笔记类型组合 |
-| **Subagent 调度** | `lib/subagent-dispatcher.js` | 生成 collect/curate/write/beautify 提示词 |
 
 ## 核心 Skill
 
