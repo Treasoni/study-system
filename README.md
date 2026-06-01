@@ -1,6 +1,13 @@
 # study-system
 
-基于 **Claude Code + Obsidian** 的半自动化技术学习笔记系统。你说「我想学 X」，系统经历 5 个阶段产出高质量 Obsidian 笔记，全程在关键节点由你审核把控。
+基于 **Claude Code + Obsidian** 的半自动化技术学习笔记系统。你说「我想学 X」，系统经历 6 个阶段产出高质量 Obsidian 笔记，全程在关键节点由你审核把控。
+
+## ✨ 核心特性
+
+- **需求发现** — 4-6 个结构化问题，明确学习目的、目标读者、深度要求
+- **自治级别** — Level 0-3 四级控制，平衡效率和把控
+- **混合笔记** — 支持多种类型组合（如概念+实战、对比+速查）
+- **Subagent 架构** — 重计算任务委托给专用子代理，防止上下文爆满
 
 ## 工作流程
 
@@ -8,15 +15,15 @@
 ```
 用户："我想学 React Hooks"
   ↓
-Phase 0 · 需求澄清 → 明确方向/深度/笔记类型/输出路径
+Phase 0 · 需求发现 → 明确方向/深度/笔记类型/输出路径
   ↓
-Phase 1 · collect  → 搜索官方文档 + 社区内容，保存原始资料
+Phase 1 · collect  → Subagent 搜索官方文档 + 社区内容，保存原始资料
   ↓
-Phase 2 · curate   → 打分、去重、分类、标记知识缺口
+Phase 2 · curate   → Subagent 打分、去重、分类、标记知识缺口
   ↓
-Phase 3 · write    → 选模板、提取关键信息、生成笔记初稿
+Phase 3 · write    → Subagent 选模板、提取关键信息、生成笔记初稿
   ↓
-Phase 4 · beautify → Obsidian Markdown 美化、双链、标签、图表
+Phase 4 · beautify → Subagent Obsidian Markdown 美化、双链、标签、图表
   ↓
 Phase 5 · evaluate → 五维评分 + 自我学习（可选）
 ```
@@ -28,7 +35,7 @@ Phase 5 · evaluate → 五维评分 + 自我学习（可选）
 用户提供原始内容 → 审核准确性 → 可选补充研究 → write → beautify → evaluate
 ```
 
-每个阶段完成后暂停，等待你审核确认再继续。
+每个阶段完成后暂停，等待你审核确认再继续（可配置自治级别减少确认）。
 
 ## 前置依赖
 
@@ -42,26 +49,37 @@ Phase 5 · evaluate → 五维评分 + 自我学习（可选）
 ```bash
 git clone git@github.com:Treasoni/study-system.git
 cd study-system
+npm install  # 安装依赖
 ```
 
 **2. 配置 Vault 路径**
 
 首次使用时，告诉 Claude Code 你的 Obsidian Vault 路径。系统会自动在 Vault 内创建 `StudySystem/` 目录结构。
 
-**3. 开始学习**
+**3. 配置自治级别（可选）**
 
-在 Claude Code 中说「我想学 X」，系统会引导你完成 Phase 0 的需求澄清，然后依次执行各阶段。
+编辑 `.study-config.yaml` 设置自治级别：
+
+```yaml
+autonomy:
+  level: 1  # 0=每步确认, 1=每阶段确认, 2=关键点确认, 3=全自动
+```
+
+**4. 开始学习**
+
+在 Claude Code 中说「我想学 X」，系统会引导你完成 Phase 0 的需求发现，然后依次执行各阶段。
 
 ## 目录结构
 
 ```
 {VAULT_PATH}/StudySystem/
-├── templates/          # 5 种笔记模板
+├── templates/          # 5 种笔记模板 + 混合类型定义
 │   ├── concept-template.md       # 概念理解
 │   ├── practice-template.md      # 实战上手
 │   ├── compare-template.md       # 对比分析
 │   ├── cheat-sheet-template.md   # 速查表
-│   └── experience-template.md    # 心得笔记
+│   ├── experience-template.md    # 心得笔记
+│   └── hybrid-sections.yaml      # 混合类型组合规则
 │
 ├── 0-inbox/            # Phase 1 产出：原始资料
 │   └── {topic}/
@@ -85,28 +103,55 @@ cd study-system
 
 本仓库还包含：
 - `.claude/skills/` — 多个 Skill 定义文件（通过 glob 动态发现）
+- `lib/` — 核心模块（配置、自治、推断、调度）
 - `.learnings/` — 自我学习记录，驱动持续改进
 - `docs/` — 系统设计文档和详细工作流说明
 - `scripts/validate-structure.sh` — 结构完整性验证脚本
+
+## 核心模块
+
+| 模块 | 文件 | 职责 |
+|------|------|------|
+| **配置系统** | `lib/config-loader.js` | 读取 `.study-config.yaml`，支持自治级别等配置 |
+| **自治管理** | `lib/autonomy-manager.js` | Level 0-3 四级控制，决定何时需要用户确认 |
+| **类型推断** | `lib/note-type-inferrer.js` | 根据用户答案推断笔记类型组合 |
+| **Subagent 调度** | `lib/subagent-dispatcher.js` | 生成 collect/curate/write/beautify 提示词 |
 
 ## 核心 Skill
 
 | Skill | 阶段 | 职责 |
 |-------|------|------|
-| **collect** | Phase 1 | 搜索收集原始资料，保存到 `0-inbox/` |
-| **curate** | Phase 2 | 打分、去重、分类、标记缺口，输出知识地图 |
-| **write** | Phase 3 | 选模板生成笔记初稿到 `2-drafts/` |
-| **beautify** | Phase 4 | Obsidian 美化排版，输出到用户指定路径 |
+| **requirement-discovery** | Phase 0 | 需求发现，明确学习目的和笔记类型 |
+| **collect** | Phase 1 | Subagent 搜索收集原始资料，保存到 `0-inbox/` |
+| **curate** | Phase 2 | Subagent 打分、去重、分类、标记缺口，输出知识地图 |
+| **write** | Phase 3 | Subagent 选模板生成笔记初稿到 `2-drafts/` |
+| **beautify** | Phase 4 | Subagent Obsidian 美化排版，输出到用户指定路径 |
 | **evaluate** | Phase 5 | 五维质量评估 + 自我学习捕获 |
 | **update** | 维护 | 更新已有笔记，支持插入新内容和刷新过时内容 |
 
 ## 笔记类型
 
+**单一类型：**
 - **概念笔记** — 一句话解释 → 核心原理 → 常见误区 → 概念关联
 - **实战笔记** — 目标 → 环境准备 → 分步操作 → 踩坑记录
 - **对比笔记** — 并列对比多个方案的优劣势和适用场景
 - **速查表** — 精简的 Cheat Sheet，适合快速查阅
 - **心得笔记** — 用户提供项目经验，系统审核准确性、补充研究、生成结构化笔记
+
+**混合类型（最多 2 种组合）：**
+- **概念+实战** — 概念解释 + 实战示例
+- **对比+速查** — 对比分析 + 速查清单
+- **心得+概念** — 学习心得 + 核心概念
+- **概念+速查** — 核心概念 + 速查清单
+
+## 自治级别
+
+| 级别 | 确认频率 | 适用场景 |
+|------|---------|---------|
+| Level 0 | 每步确认 | 新用户、重要笔记 |
+| Level 1 | 每阶段确认 | 默认，平衡效率和控制 |
+| Level 2 | 关键点确认 | 熟练用户、大量笔记 |
+| Level 3 | 全自动 | 仅最终确认 |
 
 ## 自我学习机制
 
@@ -123,7 +168,8 @@ cd study-system
 - 所有系统文件归入 `StudySystem/`，不污染 Vault 根目录
 - 每个 Skill 只负责自己的阶段，不越界
 - 数据通过文件传递，每个阶段的产出是下一阶段的输入
-- 每个阶段后由你审核，不搞全自动
+- Subagent 架构，重计算任务委托给专用子代理
+- 每个阶段后由你审核（可配置自治级别），不搞全自动
 - 优先官方文档和一手资料，所有来源可追溯
 
 ## 贡献者
