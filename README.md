@@ -1,156 +1,89 @@
-# study-system
+# Study System
 
 基于 **Claude Code + Obsidian** 的半自动化技术学习笔记系统。你说「我想学 X」，系统经历 6 个阶段产出高质量 Obsidian 笔记，全程在关键节点由你审核把控。
 
-## ✨ 核心特性
-
-- **需求发现** — 4-6 个结构化问题，明确学习目的、目标读者、深度要求
-- **自治级别** — Level 0-3 四级控制，平衡效率和把控
-- **混合笔记** — 支持多种类型组合（如概念+实战、对比+速查）
-- **Subagent 架构** — 重计算任务委托给专用子代理，防止上下文爆满
-
-## 工作流程
-
-**研究驱动型（概念/实战/对比/速查）：**
-```
-用户："我想学 React Hooks"
-  ↓
-Phase 0 · 需求发现 → 明确方向/深度/笔记类型/输出路径
-  ↓
-Phase 1 · collect  → Subagent 搜索官方文档 + 社区内容，保存原始资料
-  ↓
-Phase 2 · curate   → Subagent 打分、去重、分类、标记知识缺口
-  ↓
-Phase 3 · write    → Subagent 选模板、提取关键信息、生成笔记初稿
-  ↓
-Phase 4 · beautify → Subagent Obsidian Markdown 美化、双链、标签、图表
-  ↓
-Phase 5 · evaluate → 五维评分 + 自我学习（可选）
-```
-
-**心得笔记（用户经验驱动）：**
-```
-用户："我想写一篇关于 XX 的心得笔记"
-  ↓
-用户提供原始内容 → 审核准确性 → 可选补充研究 → write → beautify → evaluate
-```
-
-每个阶段完成后暂停，等待你审核确认再继续（可配置自治级别减少确认）。
-
-## 前置依赖
-
-- [Claude Code](https://claude.ai/code) — 作为编排引擎
-- [Obsidian](https://obsidian.md) — 笔记存储和浏览
-
-## 第三方 Skills 依赖
-
-本系统依赖以下第三方 Skills（已随仓库包含在 `.claude/skills/` 中）：
-
-| Skill | 用途 |
-|-------|------|
-| [defuddle](https://github.com/nicholasgriffintn/defuddle) | 网页正文提取（collect 阶段） |
-| [obsidian-markdown](https://github.com/nicholasgriffintn/obsidian-markdown) | Obsidian Markdown 语法规范（beautify 阶段） |
-| [obsidian-cli](https://github.com/nicholasgriffintn/obsidian-cli) | Obsidian 命令行工具（写入笔记） |
-| [json-canvas](https://github.com/nicholasgriffintn/json-canvas) | Canvas 知识地图生成（可选） |
-| [obsidian-bases](https://github.com/nicholasgriffintn/obsidian-bases) | 学习索引 Base 生成（可选） |
-| [smart-search](https://github.com/nicholasgriffintn/smart-search) | 非技术主题搜索路由 |
-| [opencli-usage](https://github.com/nicholasgriffintn/opencli-usage) | OpenCLI 工具使用指南 |
-| [digest](https://github.com/nicholasgriffintn/digest) | 自我学习压缩机制 |
-
-> Clone 后即可使用，无需额外安装 Skills。第三方 Skills 版本可能更新，如遇兼容问题请参考上方链接。
-
 ## 快速开始
 
-**1. Clone 到本地**
+### 1. 前置依赖
+
+- [Claude Code](https://claude.ai/code) — 编排引擎
+- [Obsidian](https://obsidian.md) — 笔记存储和浏览
+
+### 2. 安装
 
 ```bash
 git clone git@github.com:Treasoni/study-system.git
 cd study-system
-npm install  # 安装依赖
+npm install
 ```
 
-**2. 配置 Vault 路径**
+### 3. 配置 Vault 路径
 
 首次使用时，告诉 Claude Code 你的 Obsidian Vault 路径。系统会自动在 Vault 内创建 `StudySystem/` 目录结构。
 
-**3. 配置自治级别（可选）**
+### 4. 配置自治级别（可选）
 
-编辑 `.study-config.yaml` 设置自治级别：
+编辑 `.study-config.yaml`：
 
 ```yaml
 autonomy:
-  level: 1  # 0=每步确认, 1=每阶段确认, 2=关键点确认, 3=全自动
+  level: 1  # 0=每步确认, 1=每阶段确认(默认), 2=关键点确认, 3=全自动
 ```
 
-**4. 开始学习**
+### 5. 开始学习
 
-在 Claude Code 中说「我想学 X」，系统会引导你完成 Phase 0 的需求发现，然后依次执行各阶段。
+在 Claude Code 中说「我想学 X」，系统会引导你完成需求发现，然后依次执行各阶段。
 
-## 目录结构
+## 工作流程
+
+**研究驱动型（概念/实战/对比/速查）：**
 
 ```
-{VAULT_PATH}/StudySystem/
-├── templates/          # 5 种笔记模板 + 混合类型定义
-│   ├── concept-template.md       # 概念理解
-│   ├── practice-template.md      # 实战上手
-│   ├── compare-template.md       # 对比分析
-│   ├── cheat-sheet-template.md   # 速查表
-│   ├── experience-template.md    # 心得笔记
-│   └── hybrid-sections.yaml      # 混合类型组合规则
-│
-├── 0-inbox/            # Phase 1 产出：原始资料
-│   └── {topic}/
-│
-├── 1-curated/          # Phase 2 产出：整理分类后的资料
-│   └── {topic}/
-│
-├── 2-drafts/           # Phase 3 产出：笔记初稿
-│   └── {topic}/
-│
-├── 3-published/        # Phase 4 产出：美化后的最终笔记（默认路径）
-│   └── {topic}/
-│
-└── 4-meta/             # 元数据：执行日志、错误记录、评估报告
-    ├── execution-log.md
-    ├── error-log.md
-    └── evaluation/
+"我想学 React Hooks"
+  ↓
+Phase 0 · 需求发现 → 明确方向/深度/笔记类型
+  ↓
+Phase 1 · 收集     → Subagent 搜索官方文档 + 社区内容
+  ↓
+Phase 2 · 整理     → 打分、去重、分类、标记知识缺口
+  ↓
+Phase 3 · 撰写     → 选模板、提取关键信息、生成笔记初稿
+  ↓
+Phase 4 · 美化     → Obsidian Markdown 美化、双链、标签、图表
+  ↓
+Phase 5 · 评估     → 五维质量评分 + 自我学习
 ```
 
-最终笔记可输出到 Vault 任意位置（Phase 0 由你指定），不限于 `3-published/`。
+**心得笔记（用户经验驱动）：**
 
-本仓库还包含：
-- `.claude/skills/` — 多个 Skill 定义文件（通过 glob 动态发现）
-- `.claude/agents/` — Subagent 定义（collector、curator、writer、beautifier）
-- `.learnings/` — 自我学习记录，驱动持续改进
-- `docs/` — 系统设计文档和详细工作流说明
-- `scripts/validate-structure.sh` — 结构完整性验证脚本
+```
+"我想写一篇关于 XX 的心得笔记"
+  ↓
+用户提供原始内容 → 审核准确性 → 可选补充研究 → 撰写 → 美化 → 评估
+```
 
-## 核心 Skill
-
-| Skill | 阶段 | 职责 |
-|-------|------|------|
-| **requirement-discovery** | Phase 0 | 需求发现，明确学习目的和笔记类型 |
-| **collect** | Phase 1 | Subagent 搜索收集原始资料，保存到 `0-inbox/` |
-| **curate** | Phase 2 | Subagent 打分、去重、分类、标记缺口，输出知识地图 |
-| **write** | Phase 3 | Subagent 选模板生成笔记初稿到 `2-drafts/` |
-| **beautify** | Phase 4 | Subagent Obsidian 美化排版，输出到用户指定路径 |
-| **evaluate** | Phase 5 | 五维质量评估 + 自我学习捕获 |
-| **update** | 维护 | 更新已有笔记，支持插入新内容和刷新过时内容 |
+每个阶段完成后暂停，等待你审核确认再继续（可配置自治级别减少确认）。
 
 ## 笔记类型
 
 **单一类型：**
-- **概念笔记** — 一句话解释 → 核心原理 → 常见误区 → 概念关联
-- **实战笔记** — 目标 → 环境准备 → 分步操作 → 踩坑记录
-- **对比笔记** — 并列对比多个方案的优劣势和适用场景
-- **速查表** — 精简的 Cheat Sheet，适合快速查阅
-- **心得笔记** — 用户提供项目经验，系统审核准确性、补充研究、生成结构化笔记
+
+| 类型 | 说明 |
+|------|------|
+| 概念笔记 | 一句话解释 → 核心原理 → 常见误区 → 概念关联 |
+| 实战笔记 | 目标 → 环境准备 → 分步操作 → 踩坑记录 |
+| 对比笔记 | 并列对比多个方案的优劣势和适用场景 |
+| 速查表 | 精简的 Cheat Sheet，适合快速查阅 |
+| 心得笔记 | 用户提供项目经验，系统审核准确性、补充研究、生成结构化笔记 |
 
 **混合类型（最多 2 种组合）：**
-- **概念+实战** — 概念解释 + 实战示例
-- **对比+速查** — 对比分析 + 速查清单
-- **心得+概念** — 学习心得 + 核心概念
-- **概念+速查** — 核心概念 + 速查清单
+
+| 组合 | 说明 |
+|------|------|
+| 概念+实战 | 概念解释 + 实战示例 |
+| 对比+速查 | 对比分析 + 速查清单 |
+| 心得+概念 | 学习心得 + 核心概念 |
+| 概念+速查 | 核心概念 + 速查清单 |
 
 ## 自治级别
 
@@ -161,15 +94,30 @@ autonomy:
 | Level 2 | 关键点确认 | 熟练用户、大量笔记 |
 | Level 3 | 全自动 | 仅最终确认 |
 
-## 自我学习机制
+## 目录结构
 
-系统通过 `.learnings/` 持续改进：
+```
+{VAULT_PATH}/StudySystem/
+├── templates/          # 5 种笔记模板 + 混合类型定义
+├── 0-inbox/            # Phase 1 产出：原始资料
+├── 2-drafts/           # Phase 3 产出：笔记初稿
+├── 3-published/        # Phase 4 产出：美化后的最终笔记
+└── 4-meta/             # 元数据：日志、错误记录、评估报告
+```
 
-- **RULES.md** — 每次新任务前读取，包含压缩提炼的行动规则
-- **LEARNINGS.md / ERRORS.md** — 每次评估后记录经验教训
-- **Digest 循环** — 当文件超过阈值时自动压缩、去重、提炼规则
+最终笔记可输出到 Vault 任意位置（Phase 0 由你指定），不限于 `3-published/`。
 
-详见 [docs/learnings-digest.md](docs/learnings-digest.md)。
+## 核心 Skill
+
+| Skill | 阶段 | 职责 |
+|-------|------|------|
+| requirement-discovery | Phase 0 | 需求发现，明确学习目的和笔记类型 |
+| collect | Phase 1 | Subagent 搜索收集原始资料 |
+| curate | Phase 2 | 打分、去重、分类、标记缺口 |
+| write | Phase 3 | 选模板生成笔记初稿 |
+| beautify | Phase 4 | Obsidian 美化排版 |
+| evaluate | Phase 5 | 五维质量评估 + 自我学习 |
+| update | 维护 | 更新已有笔记 |
 
 ## 设计原则
 
@@ -177,9 +125,14 @@ autonomy:
 - 每个 Skill 只负责自己的阶段，不越界
 - 数据通过文件传递，每个阶段的产出是下一阶段的输入
 - Subagent 架构，重计算任务委托给专用子代理
-- 每个阶段后由你审核（可配置自治级别），不搞全自动
+- 每个阶段后由你审核，不搞全自动
 - 优先官方文档和一手资料，所有来源可追溯
 
-## 贡献者
+## 更多文档
 
-运行 `bash scripts/validate-structure.sh` 验证系统结构完整性。详细设计文档见 [docs/](docs/)。
+| 文档 | 内容 |
+|------|------|
+| [docs/phases.md](docs/phases.md) | Phase 0-5 详细步骤 |
+| [docs/experience-notes.md](docs/experience-notes.md) | 心得笔记工作流 |
+| [docs/updating-notes.md](docs/updating-notes.md) | 更新已有笔记 |
+| [docs/architecture.md](docs/architecture.md) | 设计 rationale |
