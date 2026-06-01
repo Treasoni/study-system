@@ -6,7 +6,7 @@ When the user selects "心得笔记" in Phase 0, the workflow is **user-input-fi
 
 ## Resume Check (NEW SESSION)
 
-Same as [phases.md Resume Check](phases.md): MUST execute Read tool on `{SYSTEM_ROOT}/TODO.md` before entering any step. If exists, ask user to resume.
+See [todo-state-machine.md](todo-state-machine.md) — Resume Check section for complete rules.
 
 ## Workflow
 

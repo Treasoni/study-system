@@ -4,13 +4,7 @@
 
 ## Resume Check (NEW SESSION)
 
-When starting ANY new session, before entering any phase:
-
-1. MUST execute Read tool on `{SYSTEM_ROOT}/TODO.md`
-2. If it exists → read `[x]` states → ask user: "Detected unfinished workflow ({topic}). Resume from Phase [N]?"
-3. If user says yes → jump to that phase (still enforce Check/Mark for that phase)
-4. If user says no → ask whether to archive or delete TODO.md and start fresh
-5. If TODO.md does NOT exist → proceed to Phase 0 normally
+See [todo-state-machine.md](todo-state-machine.md) — Resume Check section for complete rules.
 
 ## Orchestration Flow
 
