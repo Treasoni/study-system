@@ -129,7 +129,8 @@ Skill(
 
 ```
 # TODO - REFRESH: {subtopic}
-- [ ] mini-collect - 定向资料收集与整理
+- [ ] mini-collect - 定向资料收集
+- [ ] mini-curate - 定向资料整理
 - [ ] mini-write - 定向更新笔记
 ```
 
