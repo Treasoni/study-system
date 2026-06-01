@@ -42,6 +42,36 @@ Phase 5 · evaluate → 五维评分 + 自我学习（可选）
 - [Claude Code](https://claude.ai/code) — 作为编排引擎
 - [Obsidian](https://obsidian.md) — 笔记存储和浏览
 
+## 第三方 Skills 依赖
+
+本系统依赖以下第三方 Skills，需自行安装到 `.claude/skills/` 目录：
+
+| Skill | 用途 | 安装方式 |
+|-------|------|---------|
+| [defuddle](https://github.com/nicholasgriffintn/defuddle) | 网页正文提取（collect 阶段抓取内容） | `npm install -g defuddle` |
+| [obsidian-markdown](https://github.com/nicholasgriffintn/obsidian-markdown) | Obsidian Markdown 语法规范（beautify 阶段） | 手动下载 SKILL.md 放入 `.claude/skills/obsidian-markdown/` |
+| [obsidian-cli](https://github.com/nicholasgriffintn/obsidian-cli) | Obsidian 命令行工具（写入笔记） | `npm install -g obsidian-cli` |
+| [json-canvas](https://github.com/nicholasgriffintn/json-canvas) | Canvas 知识地图生成（可选） | 手动下载放入 `.claude/skills/json-canvas/` |
+| [obsidian-bases](https://github.com/nicholasgriffintn/obsidian-bases) | 学习索引 Base 生成（可选） | 手动下载放入 `.claude/skills/obsidian-bases/` |
+| [smart-search](https://github.com/nicholasgriffintn/smart-search) | 非技术主题搜索路由 | 手动下载放入 `.claude/skills/smart-search/` |
+| [opencli-usage](https://github.com/nicholasgriffintn/opencli-usage) | OpenCLI 工具使用指南 | 手动下载放入 `.claude/skills/opencli-usage/` |
+| [digest](https://github.com/nicholasgriffintn/digest) | 自我学习压缩机制 | 手动下载放入 `.claude/skills/digest/` |
+
+> ⚠️ 这些 Skills 为第三方开发，版本可能更新。安装前请确认与当前系统兼容。
+
+**快速安装脚本**（可选）：
+
+```bash
+# 创建 skills 目录
+mkdir -p .claude/skills
+
+# 安装 CLI 工具
+npm install -g defuddle
+
+# 其他 skills 请从上方链接手动下载对应的 SKILL.md
+# 放入 .claude/skills/{skill-name}/SKILL.md
+```
+
 ## 快速开始
 
 **1. Clone 到本地**
@@ -52,11 +82,15 @@ cd study-system
 npm install  # 安装依赖
 ```
 
-**2. 配置 Vault 路径**
+**2. 安装第三方 Skills**
+
+按上方「第三方 Skills 依赖」表格安装所需 Skills。最少需要 `defuddle` 和 `obsidian-markdown`。
+
+**3. 配置 Vault 路径**
 
 首次使用时，告诉 Claude Code 你的 Obsidian Vault 路径。系统会自动在 Vault 内创建 `StudySystem/` 目录结构。
 
-**3. 配置自治级别（可选）**
+**4. 配置自治级别（可选）**
 
 编辑 `.study-config.yaml` 设置自治级别：
 
@@ -65,7 +99,7 @@ autonomy:
   level: 1  # 0=每步确认, 1=每阶段确认, 2=关键点确认, 3=全自动
 ```
 
-**4. 开始学习**
+**5. 开始学习**
 
 在 Claude Code 中说「我想学 X」，系统会引导你完成 Phase 0 的需求发现，然后依次执行各阶段。
 

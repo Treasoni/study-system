@@ -18,7 +18,7 @@ skills-lock.json
 .learnings/ERRORS.md
 .learnings/archive/
 
-# Third-party skills (not needed for study system)
+# Third-party skills (see README.md for installation instructions)
 .claude/skills/defuddle/
 .claude/skills/delete-file/
 .claude/skills/digest/
