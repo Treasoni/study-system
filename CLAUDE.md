@@ -61,6 +61,11 @@ Claude uses glob patterns — no hardcoded paths.
 - **Templates**: `Glob templates/*.md` → match frontmatter `type` (concept/practice/compare/cheat-sheet/experience)
 - **Config**: `Glob .obsidian-config.md` → Read for vault path
 
+> **Skill Filtering**: After Glob results, filter by `skills.mode` in `.study-config.yaml`:
+> - `project` → only study-system runtime skills (collect, curate, write, beautify, evaluate, digest, update, update-workflow, requirement-discovery, moc, generate-links, fix-broken-links, delete-file, obsidian-cli, obsidian-markdown)
+> - `dev` → only development skills (comet-*, opencli-*, brainstorming, openspec-*, writing-plans, executing-plans, subagent-driven-development, test-driven-development, systematic-debugging, using-git-worktrees, finishing-a-development-branch, dispatching-parallel-agents, using-superpowers, requesting-code-review, receiving-code-review, verification-before-completion, sortspec-generator, tool-registry, smart-search, defuddle, json-canvas, writing-skills)
+> - `all` → no filtering (current behavior)
+
 ## Pre-Task Initialization
 
 > **⚠️ MAIN AGENT ONLY** — 以下初始化步骤仅适用于主 Agent。Subagent 由主 Agent 直接传入所需上下文，无需执行这些读取。
