@@ -2,6 +2,7 @@
 change: tool-registry-collect-refactor
 design-doc: docs/superpowers/specs/2026-06-01-tool-registry-collect-design.md
 base-ref: manual-windows-no-bash
+archived_with: 2026-06-01-tool-registry-collect-refactor
 ---
 
 # Implementation Plan: Tool Registry + Collect Refactoring

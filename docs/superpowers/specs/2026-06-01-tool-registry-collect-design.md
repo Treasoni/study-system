@@ -2,6 +2,8 @@
 comet_change: tool-registry-collect-refactor
 role: technical-design
 canonical_spec: openspec
+archived_with: 2026-06-01-tool-registry-collect-refactor
+status: archived
 ---
 
 # Design: Tool Registry + Collect Skill Refactoring
