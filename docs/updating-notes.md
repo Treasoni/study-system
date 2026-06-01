@@ -18,15 +18,14 @@ User: "add this paragraph about useEffect cleanup to my React hooks note"
 User: "the React hooks section is outdated, update it with current patterns"
 → Invoke /update — it will ask: replace in-place or re-research first?
   - Replace in-place: user provides new content → INSERT mode (single step, no TODO.md needed)
-  - Re-research: runs focused collect→curate→write for just that section
+  - Re-research: runs focused collect→write for just that section
 ```
 
 When re-research is chosen → MUST execute Write tool to create a mini `{SYSTEM_ROOT}/TODO.md`:
 
 ```markdown
 # TODO - REFRESH: {topic}
-- [ ] mini-collect - 定向资料收集
-- [ ] mini-curate - 定向资料整理
+- [ ] mini-collect - 定向资料收集与整理
 - [ ] mini-write - 定向更新笔记
 ```
 
