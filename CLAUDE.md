@@ -62,8 +62,8 @@ Claude uses glob patterns — no hardcoded paths.
 - **Config**: `Glob .obsidian-config.md` → Read for vault path
 
 > **Skill Filtering**: After Glob results, filter by `skills.mode` in `.study-config.yaml`:
-> - `project` → only study-system runtime skills (collect, curate, write, beautify, evaluate, digest, update, update-workflow, requirement-discovery, moc, generate-links, fix-broken-links, delete-file, obsidian-cli, obsidian-markdown)
-> - `dev` → only development skills (comet-*, opencli-*, brainstorming, openspec-*, writing-plans, executing-plans, subagent-driven-development, test-driven-development, systematic-debugging, using-git-worktrees, finishing-a-development-branch, dispatching-parallel-agents, using-superpowers, requesting-code-review, receiving-code-review, verification-before-completion, sortspec-generator, tool-registry, smart-search, defuddle, json-canvas, writing-skills)
+> - `project` → only study-system runtime skills (collect, curate, write, beautify, evaluate, digest, update, update-workflow, requirement-discovery, moc, generate-links, fix-broken-links, delete-file, obsidian-cli, obsidian-markdown, smart-search, defuddle, json-canvas,sortspec-generator, opencli-)
+> - `dev` → only development skills (comet-*, brainstorming, openspec-*, writing-plans, executing-plans, subagent-driven-development, test-driven-development, systematic-debugging, using-git-worktrees, finishing-a-development-branch, dispatching-parallel-agents, using-superpowers, requesting-code-review, receiving-code-review, verification-before-completion, tool-registry, writing-skills)
 > - `all` → no filtering (current behavior)
 
 ## Pre-Task Initialization
