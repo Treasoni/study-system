@@ -1,5 +1,7 @@
 workflow: full
-phase: build
+phase: verify
+build_command: "cd scripts && /c/Users/zhqzn/miniconda3/python.exe -m pytest test_batch_fetch.py test_merge_sources.py -v"
+verify_command: "cd scripts && /c/Users/zhqzn/miniconda3/python.exe -m pytest test_batch_fetch.py test_merge_sources.py -v"
 build_mode: subagent-driven-development
 isolation: branch
 verify_mode: null
