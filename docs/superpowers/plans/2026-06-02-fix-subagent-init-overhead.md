@@ -2,6 +2,7 @@
 change: fix-subagent-init-overhead
 design-doc: openspec/changes/fix-subagent-init-overhead/design.md
 base-ref: e25a5ace28b759cc7d5e8bae9e09d1515d6b97f6
+archived-with: 2026-06-02-fix-subagent-init-overhead
 ---
 
 # Fix Subagent Init Overhead
