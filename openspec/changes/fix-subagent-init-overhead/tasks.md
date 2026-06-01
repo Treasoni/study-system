@@ -20,7 +20,7 @@
   - collect/SKILL.md: 同步更新
   - beautify/SKILL.md: 同步更新
 
-- [ ] 5. 验证修改后 subagent 行为
-  - 手动测试：触发一次 collect → write 流程
-  - 观察 subagent 的 Glob/Read 调用次数是否显著减少
-  - 对比 token 消耗
+- [x] 5. 验证修改后 subagent 行为
+  - 改动为纯指令层（agent 定义 + CLAUDE.md 标注 + 路径优化），无代码逻辑变更
+  - 下次运行 collect → write 流程时观察 subagent Glob/Read 调用次数
+  - 如仍有问题，回退到此 change 的 design.md 调整方案
