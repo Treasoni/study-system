@@ -18,22 +18,6 @@ skills-lock.json
 .learnings/ERRORS.md
 .learnings/archive/
 
-# Third-party skills (see README.md for installation instructions)
-.claude/skills/defuddle/
-.claude/skills/delete-file/
-.claude/skills/digest/
-.claude/skills/fix-broken-links/
-.claude/skills/generate-links/
-.claude/skills/json-canvas/
-.claude/skills/moc/
-.claude/skills/obsidian-bases/
-.claude/skills/obsidian-cli/
-.claude/skills/obsidian-markdown/
-.claude/skills/opencli-adapter-author/
-.claude/skills/opencli-autofix/
-.claude/skills/opencli-browser/
-.claude/skills/opencli-usage/
-.claude/skills/smart-search/
-.claude/skills/sortspec-generator/
+# Local config
 .claude/commands/
 .claude/settings.local.json
