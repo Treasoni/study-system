@@ -2,6 +2,8 @@
 comet_change: token-cost-optimization
 role: technical-design
 canonical_spec: openspec
+archived-with: 2026-06-02-token-cost-optimization
+status: final
 ---
 
 # Token Cost Optimization — Design Doc
