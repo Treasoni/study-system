@@ -47,4 +47,26 @@ autonomy:
     const config = { subagent: { timeout: 600000 } };
     expect(getSubagentTimeout(config)).toBe(600000);
   });
+
+  test('mutation isolation: loadConfig returns independent copies', () => {
+    const config1 = loadConfig('/nonexistent/.study-config.yaml');
+    const config2 = loadConfig('/nonexistent/.study-config.yaml');
+
+    // Mutate config1
+    config1.autonomy.overrides.push({ phase: 'write', level: 0 });
+    config1.autonomy.level = 99;
+
+    // config2 should be unaffected
+    expect(config2.autonomy.overrides).toHaveLength(0);
+    expect(config2.autonomy.level).toBe(1);
+  });
+
+  test('loadConfig returns defaults for empty YAML file', () => {
+    fs.writeFileSync(testConfigPath, '');
+    const config = loadConfig(testConfigPath);
+    expect(config.autonomy.level).toBe(1);
+    expect(config.autonomy.overrides).toEqual([]);
+    expect(config.subagent.timeout).toBe(300000);
+    expect(config.requirement_discovery.enabled).toBe(true);
+  });
 });
