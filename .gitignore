@@ -3,11 +3,8 @@
 # Dependencies
 node_modules/
 
-# OpenSpec working directory
-openspec/
-
 # Generated design docs and plans
-docs/superpowers/
+# docs/superpowers/  # 已启用追踪
 
 # Lock files
 package-lock.json
@@ -19,5 +16,5 @@ skills-lock.json
 .learnings/archive/
 
 # Local config
-.claude/commands/
+# .claude/commands/  # 已启用追踪
 .claude/settings.local.json
