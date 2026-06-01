@@ -15,6 +15,18 @@ describe('AutonomyManager', () => {
     expect(manager.shouldConfirm('curate', 'start')).toBe(true);
   });
 
+  test('Level 1 does not confirm mid-phase points', () => {
+    const manager = new AutonomyManager(1);
+    expect(manager.shouldConfirm('collect', 'mid')).toBe(false);
+    expect(manager.shouldConfirm('write', 'mid')).toBe(false);
+  });
+
+  test('Level 1 confirms start at non-first phases', () => {
+    const manager = new AutonomyManager(1);
+    expect(manager.shouldConfirm('write', 'start')).toBe(true);
+    expect(manager.shouldConfirm('beautify', 'start')).toBe(true);
+  });
+
   test('Level 2 requires confirmation only at critical points', () => {
     const manager = new AutonomyManager(2);
     expect(manager.shouldConfirm('write', 'note_type_selection')).toBe(true);
