@@ -20,15 +20,10 @@ NEVER chain phases. NEVER skip a phase. NEVER assume user approval.
 
 ### TODO.md State Machine (CRITICAL)
 
-Use explicit tool names (Read/Write/Bash) — NEVER natural-language verbs like "check" or "mark".
-
-- **Resume Check**: MUST Read tool on `{SYSTEM_ROOT}/TODO.md` at session start. If exists → read `[x]` → ask: "Resume from Phase [N]?"
-- **Create**: After user confirms plan → Write tool: create `{SYSTEM_ROOT}/TODO.md` with phases as `- [ ]`
-- **Check**: Before ANY phase skill → Read tool on TODO.md → verify prior phases `[x]` → if not, STOP
-- **Mark**: After ANY phase completes → Write tool: update `[x]` for that phase
-- **Delete**: When done → Bash tool: `rm "{SYSTEM_ROOT}/TODO.md"`
-
-Quality gate: verify prior phases `[x]`, check output files exist and non-empty. If fail → log to error-log.md → ask user.
+See [docs/todo-state-machine.md](docs/todo-state-machine.md) for complete rules. Key invariants:
+- Use explicit tool names (Read/Write/Bash) — NEVER natural-language verbs
+- Phase Gate: Read TODO.md before every phase, verify prior `[x]`
+- Delete TODO.md via Bash when workflow completes
 
 ### Mandatory Triggered Reads（强制前置读取）
 
