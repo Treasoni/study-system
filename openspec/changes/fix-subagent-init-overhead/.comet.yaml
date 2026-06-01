@@ -8,7 +8,7 @@ isolation: branch
 verify_mode: full
 verify_result: pending
 verification_report: docs/superpowers/reports/2026-06-02-fix-subagent-init-overhead-verify.md
-branch_status: pending
+branch_status: handled
 created_at: 2026-06-02
 verified_at: null
 archived: false
