@@ -16,9 +16,11 @@ paths:
 
 ## 技能列表
 
-> **来源说明**：以下技能由对应插件提供（通过 `.claude/settings.local.json` 的 `enabledPlugins` 启用），而非本地 `.claude/skills/` 目录中的自定义技能。
+### 插件技能（来自 plugins）
 
-### 文件处理
+通过 `.claude/settings.local.json` 的 `enabledPlugins` 启用，位于 `.claude/skills/` 目录之外。
+
+#### 文件处理
 
 | 技能 | 触发场景 | 关键触发词 |
 |------|----------|-----------|
@@ -27,31 +29,37 @@ paths:
 | `xlsx` | 创建、读取、编辑 Excel 表格 | Excel、.xlsx、表格、电子表格 |
 | `pptx` | 创建、读取、编辑 PowerPoint 演示文稿 | PPT、PowerPoint、.pptx、幻灯片、演示文稿 |
 
-### 图表与可视化
+#### 图表与可视化
 
 | 技能 | 触发场景 | 关键触发词 |
 |------|----------|-----------|
 | `excalidraw-diagram` | 生成 Excalidraw 流程图、思维导图、架构图 | 画图、流程图、思维导图、Excalidraw、可视化、diagram |
 | `json-canvas` | 生成 JSON Canvas 格式的可视化画布 | canvas、画布、JSON Canvas |
 
-### Obsidian 相关
+#### Obsidian 相关
 
 | 技能 | 触发场景 | 关键触发词 |
 |------|----------|-----------|
 | `obsidian-markdown` | 处理 Obsidian 特有的 Markdown 语法 | Obsidian、wikilink、双链、嵌入 |
 | `obsidian-cli` | 通过 CLI 操作 Obsidian vault | Obsidian 命令行、vault 操作 |
 | `obsidian-bases` | 处理 Obsidian Bases 数据库 | Bases、数据库、table view |
-### 内容提取
+#### 内容提取
 
 | 技能 | 触发场景 | 关键触发词 |
 |------|----------|-----------|
 | `defuddle` | 从网页提取正文内容 | 提取网页、网页正文、defuddle |
 
-### 开发工具
+#### 开发工具
 
 | 技能 | 触发场景 | 关键触发词 |
 |------|----------|-----------|
 | `skill-creator` | 创建新的 Claude Code 技能 | 创建 skill、新技能、写一个 skill |
+
+### 本地自定义技能（Local）
+
+位于 `.claude/skills/` 目录下的自定义技能，由项目团队维护。
+
+> 当前无本地自定义技能。如需添加，请在 `.claude/skills/<skill-name>/` 目录下创建 `skill.md`。
 
 ## 调用流程
 
@@ -69,7 +77,7 @@ paths:
 
 ### 2. 匹配技能
 
-- 优先匹配**最具体**的技能（如"删除 Obsidian 文件" → `safe-delete`，而非通用删除）
+- 优先匹配**最具体**的技能
 - 触发词可能出现在用户消息的任何位置
 - 中英文触发词同等对待
 
