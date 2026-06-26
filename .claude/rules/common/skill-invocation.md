@@ -26,6 +26,14 @@
 | `obsidian-markdown` | 处理 Obsidian 特有的 Markdown 语法 | Obsidian、wikilink、双链、嵌入 |
 | `obsidian-cli` | 通过 CLI 操作 Obsidian vault | Obsidian 命令行、vault 操作 |
 | `obsidian-bases` | 处理 Obsidian Bases 数据库 | Bases、数据库、table view |
+#### 资料研究
+
+| 技能 | 触发场景 | 关键触发词 |
+|------|----------|-----------|
+| `research-planner` | 资料收集前的需求澄清与引导 | 想学、帮我整理、研究一下、了解一下、不知道从哪开始、帮我看看、research planning、explore topic |
+| `research-collector` | 多策略高效资料收集 | 收集资料、研究资料、搜集信息、资料整理、research、gather information、collect资料 |
+| `subagent-generator` | Subagent 创建配置规范 | subagent、子代理、并行任务、fork、agent、生成子任务 |
+
 #### 内容提取
 
 | 技能 | 触发场景 | 关键触发词 |
