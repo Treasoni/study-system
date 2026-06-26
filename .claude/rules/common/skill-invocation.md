@@ -32,13 +32,7 @@
 |------|----------|-----------|
 | `research-planner` | 资料收集前的需求澄清与引导 | 想学、帮我整理、研究一下、了解一下、不知道从哪开始、帮我看看、research planning、explore topic |
 | `research-collector` | 多策略高效资料收集 | 收集资料、研究资料、搜集信息、资料整理、research、gather information、collect资料 |
-| `subagent-generator` | Subagent 创建配置规范 | subagent、子代理、并行任务、fork、agent、生成子任务 |
 
-#### 内容写作
-
-| 技能 | 触发场景 | 关键触发词 |
-|------|----------|-----------|
-| `chapter-writer` | 逐章撰写学习笔记，每章确认，支持中途调整方向 | 逐章写作、写笔记、写章节、chapter writer、写学习笔记、按大纲写 |
 
 #### 内容提取
 
