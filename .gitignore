@@ -1,1 +1,24 @@
 .DS_Store
+
+# Security - never commit secrets
+.env
+.env.local
+.env.*.local
+
+# API keys and tokens
+*.key
+*.pem
+*.p12
+
+# Logs that may contain sensitive data
+*.log
+logs/
+
+# Temporary files
+*.tmp
+*.temp
+.tmp/
+
+# Security audit logs (local only)
+**/security-audit.log
+**/security-incident.md
