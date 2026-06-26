@@ -1,7 +1,7 @@
 
 # Skill Creation
 
-当用户想要创建新的 skill 时，必须使用 `skill-creator` 技能。
+当用户想要创建新的或优化 existing skill 时，必须使用 `skill-creator` 技能。
 
 ## 触发条件
 
