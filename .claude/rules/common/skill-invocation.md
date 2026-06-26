@@ -1,7 +1,3 @@
----
-paths:
-  - ".claude/skills"
----
 
 # 技能调用指南
 
