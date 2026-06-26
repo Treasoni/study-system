@@ -1,11 +1,11 @@
 ---
 name: learning-note-orchestrator
-description: 学习笔记全流程编排器：从意图澄清到最终输出的完整工作流协调。支持大纲模式和随性模式，自动管理检查点、进度跟踪和质量把关。触发词：学习笔记、完整流程、从头开始、全流程、orchestrator、workflow、learning notes workflow。
+description: 学习笔记全流程编排器：从意图澄清到最终输出的完整工作流协调。自动调用现有 skills 和 agents 完成各阶段任务。触发词：学习笔记、完整流程、从头开始、全流程、orchestrator、workflow、learning notes workflow。
 ---
 
 # Learning Note Orchestrator - 学习笔记全流程编排器
 
-协调从资料收集到最终输出的完整学习笔记工作流，支持大纲模式和随性模式，自动管理检查点、进度跟踪和质量把关。
+协调从资料收集到最终输出的完整学习笔记工作流，自动调用现有 skills 和 agents 完成各阶段任务。
 
 ## 触发条件
 
@@ -20,244 +20,128 @@ description: 学习笔记全流程编排器：从意图澄清到最终输出的�
 
 ## 核心原则
 
-### 1. 阶段间设检查点
-每完成一个阶段就停下来让用户确认，不一路跑到黑。
+1. **技能复用**：调用现有 skills/agents，不重复实现
+2. **阶段检查点**：每阶段结束让用户确认
+3. **进度跟踪**：自动更新 todo.md
+4. **中间产物文件化**：每个阶段输出落盘
 
-### 2. 中间产物文件化
-每个阶段的输出落盘，回退时增量追加。
-
-### 3. 收集必须隔离
-subagent fork 模式，强制字数限制，避免 token 污染。
-
-### 4. 大纲可选
-支持大纲模式和随性模式自由切换。
-
-### 5. 不替用户决定，帮用户看清选项
-探测式收集展示全景，让用户选择。
-
-## 工作流程概览
+## 工作流程
 
 ```
-阶段 0: 意图澄清
-    ↓ [确认]
-阶段 1: 探测式收集
-    ↓ [确认]
-阶段 2: 深度收集
-    ↓ [确认]
-阶段 3: 大纲生成 (大纲模式) / 自由探索 (随性模式)
-    ↓ [确认]
-阶段 4: 逐章写作
-    ↓ [每章确认]
-阶段 5: 收尾组装
-    ↓ [确认]
-阶段 6: 美化输出
-    ↓
-完成
+阶段 0: 意图澄清      → 调用 /research-planner
+阶段 1: 探测式收集    → 调用 /research-collector
+阶段 2: 深度收集      → 调用 /research-collector
+阶段 3: 大纲生成      → 调用 outline-generator agent
+阶段 4: 逐章写作      → 调用 chapter-writer agent
+阶段 5: 收尾组装      → 调用 note-assembler agent
+阶段 6: 美化输出      → 调用 /note-beautifier
 ```
 
-## 详细步骤
+## 详细执行步骤
 
 ### 阶段 0: 意图澄清
 
-**目标**: 用最少的问题锁定学习方向，支持模糊输入。
+**调用技能**: `/research-planner`
 
-**执行方式**: 主 Agent 直接执行
-
-**操作步骤**:
-
-1. **分析用户输入**
-   - 用户输入明确（有主题 + 笔记类型 + 深度）→ 直接进入阶段 1
-   - 用户输入模糊（只有主题）→ 先探测再让用户选
-   - 用户输入极模糊（只有方向）→ 探测后展示全景菜单
-
-2. **创建工作目录**
+**操作**:
+1. 创建工作目录
    ```bash
    mkdir -p /workspace/learning_notes/chapters
    mkdir -p /workspace/learning_notes/output
    ```
 
-3. **初始化 Todo 文件**
-   - 复制模板：`/Users/zhqznc/code/study-system/.claude/templates/learning-note-todo.md`
-   - 保存到：`/workspace/learning_notes/todo.md`
-   - 更新主题和日期
+2. 初始化 Todo 文件
+   - 复制模板到 `/workspace/learning_notes/todo.md`
 
-4. **轻量级需求澄清**
-   - 最多问 3 个核心问题
-   - 笔记类型、学习深度、现有基础
+3. 调用 `/research-planner` 进行需求澄清
+   - 技能会自动处理：意图分析、轻量级提问、探测式引导
+   - 生成意图文件：`/workspace/learning_notes/00_intent.md`
 
-5. **生成意图文件**
-   - 保存到：`/workspace/learning_notes/00_intent.md`
+**检查点**: 研究计划确认后进入下一阶段
 
-**检查点**: 向用户展示研究计划，确认后进入下一阶段
+### 阶段 1-2: 资料收集
 
-### 阶段 1: 探测式收集
+**调用技能**: `/research-collector`
 
-**目标**: 用最小 token 成本摸清资料全貌，帮用户看到可选方向。
+**操作**:
+1. 调用 `/research-collector "{主题} {方向}"`
+   - 技能会自动处理：探测式收集、深度收集、两阶段策略
+   - 生成素材文件：`/workspace/learning_notes/02_deep_research.md`
 
-**执行方式**: Fork Subagent × 2-3（并行）
+2. 向用户确认素材质量
 
-**操作步骤**:
-
-1. **派发探测 subagent**
-   - 每个 subagent 搜索一个角度
-   - 只返回标题 + 一句话摘要
-   - 每条 ≤150 字
-
-2. **汇总展示**
-   - 整理成几个可选方向
-   - 展示给用户选择
-
-3. **保存探测结果**
-   - 保存到：`/workspace/learning_notes/01_explore_result.md`
-
-**检查点**: 用户选择学习方向后进入下一阶段
-
-### 阶段 2: 深度收集
-
-**目标**: 在用户选定的方向上，收集高质量、结构化的学习素材。
-
-**执行方式**: Fork Subagent × 2-3（并行）
-
-**操作步骤**:
-
-1. **派发深度收集 subagent**
-   - 每个 subagent 负责 1-2 个维度
-   - 覆盖：核心概念、实战代码、常见坑、工具链、进阶路径
-   - 每条 ≤200 字，标注难度
-
-2. **质量确认**
-   - 统计官方文档数、教程数、深度文章数
-   - 向用户确认素材是否足够
-
-3. **保存深度素材**
-   - 保存到：`/workspace/learning_notes/02_deep_research.md`
-
-**检查点**: 用户确认素材质量后进入下一阶段
+**检查点**: 素材确认后进入下一阶段
 
 ### 阶段 3: 大纲生成（大纲模式）
 
-**目标**: 基于收集的素材，生成学习路径大纲，让用户确认。
+**调用 Agent**: `outline-generator`
 
-**执行方式**: `outline-generator` agent
+**操作**:
+```bash
+# 使用 Agent 工具调用 outline-generator
+Agent(
+  subagent_type: "outline-generator",
+  prompt: "基于 /workspace/learning_notes/00_intent.md 和 /workspace/learning_notes/02_deep_research.md 生成大纲"
+)
+```
 
-**操作步骤**:
+- Agent 自动读取素材并生成大纲
+- 输出到：`/workspace/learning_notes/03_outline.md`
 
-1. **启动 outline-generator**
-   - 读取意图文件和深度素材
-   - 根据笔记类型选择大纲结构
-   - 生成大纲（≤3级层级）
+**检查点**: 大纲确认后进入下一阶段
 
-2. **展示大纲**
-   - 向用户展示完整大纲
-   - 询问是否需要调整
-
-3. **保存大纲**
-   - 保存到：`/workspace/learning_notes/03_outline.md`
-
-**检查点**: 用户确认大纲后进入下一阶段
-
-**注意**: 随性模式跳过此阶段，直接进入阶段 4 的自由探索写作。
+**注意**: 随性模式跳过此阶段
 
 ### 阶段 4: 逐章写作
 
-**目标**: 按大纲或按用户兴趣逐段生成笔记内容。
+**调用 Agent**: `chapter-writer`
 
-**执行方式**: `chapter-writer` agent
+**操作**:
+```bash
+# 使用 Agent 工具调用 chapter-writer
+Agent(
+  subagent_type: "chapter-writer",
+  prompt: "基于 /workspace/learning_notes/03_outline.md 逐章写作"
+)
+```
 
-**操作步骤**:
-
-1. **启动 chapter-writer**
-   - 基于大纲逐章写作
-   - 每写完一章暂停等待用户确认
-
-2. **处理用户反馈**
-   - 确认 → 继续下一章
-   - 调整方向 → 记录新方向，重新规划后续章节
-   - 修改 → 修改当前章节
-
-3. **保存章节**
-   - 保存到：`/workspace/learning_notes/chapters/{N}_{章节名}.md`
+- Agent 自动逐章写作，每章完成后暂停等待确认
+- 章节输出到：`/workspace/learning_notes/chapters/`
 
 **检查点**: 每章写完都暂停确认
 
 ### 阶段 5: 收尾组装
 
-**目标**: 将所有零散片段拼装为最终笔记。
+**调用 Agent**: `note-assembler`
 
-**执行方式**: `note-assembler` agent
+**操作**:
+```bash
+# 使用 Agent 工具调用 note-assembler
+Agent(
+  subagent_type: "note-assembler",
+  prompt: "组装 /workspace/learning_notes/chapters/ 下的所有章节"
+)
+```
 
-**操作步骤**:
+- Agent 自动组装章节，添加过渡、生成目录
+- 输出到：`/workspace/learning_notes/output/final_note.md`
 
-1. **启动 note-assembler**
-   - 读取所有章节文件
-   - 选择组装方式（A: 按顺序拼接 / B: 重新排序 / C: 保持零散）
-
-2. **执行组装**
-   - 添加过渡语
-   - 生成目录
-   - 统一标题层级
-   - 检查引用
-
-3. **保存完整笔记**
-   - 保存到：`/workspace/learning_notes/output/final_note.md`
-
-**检查点**: 用户确认组装结果后进入下一阶段
+**检查点**: 组装结果确认后进入下一阶段
 
 ### 阶段 6: 美化输出
 
-**目标**: 将 Markdown 合成为最终文档。
+**调用技能**: `/note-beautifier`
 
-**执行方式**: `note-beautifier` skill
+**操作**:
+1. 询问用户输出格式（PDF/Word/PPT）
+2. 调用 `/note-beautifier` 进行格式转换
+3. 输出到：`/workspace/learning_notes/output/final_note.{format}`
 
-**操作步骤**:
-
-1. **选择输出格式**
-   - PDF / Word / PPT / 仅 Markdown 美化
-
-2. **执行格式转换**
-   - 调用 note-beautifier skill
-   - 生成最终文档
-
-3. **保存输出**
-   - 保存到：`/workspace/learning_notes/output/final_note.{format}`
-
-**检查点**: 用户确认输出结果
-
-## 渐进式调整机制
-
-### 用户反馈分类器
-
-主 Agent 在每次用户反馈后执行判断:
-
-| 用户反馈 | 分类 | 处理动作 |
-|---------|------|---------|
-| "继续" / "OK" / "没问题" | 正常推进 | 进入下一阶段 |
-| "XX 不够详细" / "补充 XX" | 追加需求 | 在当前阶段追加，不回退 |
-| "我想换个方向" | 方向调整 | 记录新方向 → 判断素材是否已覆盖 → 未覆盖则追加收集 |
-| "从头来吧" | 重启 | 保留已有素材文件，回到阶段 0 |
-| 不确定意图 | 追问 | 追问一个具体选择题 |
-
-### 回退成本控制
-
-| 回退场景 | 成本 | 处理方式 |
-|----------|------|----------|
-| 大纲调整 | 低 | 直接改大纲文件，已写章节不动 |
-| 补充某方向素材 | 中 | 只追加搜索该方向，不动已有素材 |
-| 推翻重来 | 高 | 保留原始素材，重新生成大纲 |
-| 发现新兴趣点 | 低 | 追加一次探测收集，合并到素材池 |
+**检查点**: 输出结果确认
 
 ## Todo 进度跟踪
 
-### 更新时机
-
 在每个阶段完成时，更新 `/workspace/learning_notes/todo.md`:
-
-1. **阶段开始**: 标记状态为 "进行中"
-2. **阶段完成**: 标记状态为 "已完成"
-3. **遇到问题**: 记录到异常记录表
-4. **方向调整**: 记录到方向调整记录表
-
-### 更新格式
 
 ```markdown
 ## 阶段 X: {阶段名}
@@ -272,97 +156,43 @@ subagent fork 模式，强制字数限制，避免 token 污染。
 
 ```
 /workspace/learning_notes/
-├── 00_intent.md              ← 学习意图（可被后续调整更新）
-├── 01_explore_result.md      ← 探测收集结果
-├── 02_deep_research.md       ← 深度素材（可增量追加）
-├── 03_outline.md             ← 大纲（仅大纲模式，可调整）
-├── todo.md                   ← 工作流执行检查清单
+├── 00_intent.md              ← 意图文件
+├── 02_deep_research.md       ← 素材文件
+├── 03_outline.md             ← 大纲文件（大纲模式）
+├── todo.md                   ← 执行检查清单
 ├── chapters/
 │   ├── 01_xxx.md
-│   ├── 02_xxx.md
 │   └── ...
 └── output/
     └── final_note.md/pdf     ← 最终产物
 ```
 
-## 异常处理
+## 错误处理
 
-### 工具缺失
+| 情况 | 处理方式 |
+|------|---------|
+| 缺少意图文件 | 重新调用 `/research-planner` |
+| 缺少素材文件 | 重新调用 `/research-collector` |
+| 缺少大纲文件 | 重新调用 `outline-generator` |
+| 缺少章节文件 | 重新调用 `chapter-writer` |
+| 工具缺失 | 提示用户安装（如 pandoc） |
 
-如果缺少必要工具（如 pandoc），提示用户安装:
-```bash
-# 安装 pandoc
-brew install pandoc
-
-# 安装 xelatex (PDF 生成)
-brew install --cask mactex-no-gui
-```
-
-### 文件缺失
-
-如果必要文件缺失，告知用户并建议:
-- 缺少意图文件 → 重新执行阶段 0
-- 缺少素材文件 → 重新执行阶段 1 或 2
-- 缺少大纲文件 → 重新执行阶段 3
-- 缺少章节文件 → 重新执行阶段 4
-
-### Token 超限
-
-如果 subagent 返回内容过多，:
-1. 强制截断到字数限制
-2. 提示用户缩减范围
-3. 建议分批收集
-
-## 高级用法
-
-### 1. 断点续传
-
-如果工作流中断，可以从断点继续:
-```
-用户: "上次写到第3章，继续"
-AI: 检查 todo.md，发现阶段 4 进行中，从第 3 章继续
-```
-
-### 2. 模式切换
-
-支持在工作流中切换模式:
-```
-用户: "不想按大纲写了，改成随性模式"
-AI: 保存已有章节，切换到自由探索写作
-```
-
-### 3. 增量更新
-
-支持对已有笔记进行增量更新:
-```
-用户: "在第2章补充一些实战案例"
-AI: 定位到第2章，追加内容
-```
-
-## 与其他技能的关系
+## 技能依赖关系
 
 ```
-research-planner (需求澄清)
-    ↓
-learning-note-orchestrator (本技能 - 编排)
-    ↓
-research-collector (资料收集)
-    ↓
-outline-generator (大纲生成)
-    ↓
-chapter-writer (逐章写作)
-    ↓
-note-assembler (收尾组装)
-    ↓
-note-beautifier (美化输出)
+learning-note-orchestrator (本技能)
+    │
+    ├── /research-planner      (意图澄清)
+    ├── /research-collector    (资料收集)
+    ├── outline-generator      (大纲生成 - agent)
+    ├── chapter-writer         (逐章写作 - agent)
+    ├── note-assembler         (收尾组装 - agent)
+    └── /note-beautifier       (美化输出)
 ```
 
 ## 注意事项
 
-1. **阶段间必须确认**: 不要跳过检查点
-2. **文件必须落盘**: 每个阶段的输出都要保存
-3. **进度必须跟踪**: 及时更新 todo.md
-4. **方向调整要记录**: 保存到方向调整记录表
-5. **异常要记录**: 保存到异常记录表
-6. **支持断点续传**: 中断后可以从断点继续
-7. **保持用户主导**: 每个阶段都给用户选择权
+1. **不要重复实现**：每个阶段都调用对应的 skill/agent
+2. **检查点必须执行**：每阶段结束让用户确认
+3. **进度必须更新**：及时更新 todo.md
+4. **支持断点续传**：根据 todo.md 判断从哪继续
