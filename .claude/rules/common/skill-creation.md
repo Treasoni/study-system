@@ -39,3 +39,4 @@ paths:
 - 不要手动创建 skill 目录和文件，始终使用 `skill-creator` 技能
 - `skill-creator` 包含完整的创建、测试、评估和打包流程
 - 对于已有 skill 的修改和优化，也可以使用该技能
+- 新创建的 skill 会自动注册到技能列表.claude/rules/common/skill-invocation.md中，供后续调用
