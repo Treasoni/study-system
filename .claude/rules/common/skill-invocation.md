@@ -39,8 +39,6 @@ paths:
 | `obsidian-markdown` | 处理 Obsidian 特有的 Markdown 语法 | Obsidian、wikilink、双链、嵌入 |
 | `obsidian-cli` | 通过 CLI 操作 Obsidian vault | Obsidian 命令行、vault 操作 |
 | `obsidian-bases` | 处理 Obsidian Bases 数据库 | Bases、数据库、table view |
-| `safe-delete` | 安全删除 Obsidian 文件并清理双向链接 | 删除文件、删掉、清理引用、safe delete |
-
 ### 内容提取
 
 | 技能 | 触发场景 | 关键触发词 |
@@ -51,9 +49,7 @@ paths:
 
 | 技能 | 触发场景 | 关键触发词 |
 |------|----------|-----------|
-| `mcp-builder` | 创建 MCP 服务器 | MCP、MCP server、MCP 服务器 |
 | `skill-creator` | 创建新的 Claude Code 技能 | 创建 skill、新技能、写一个 skill |
-| `skill-refactor` | 重构/优化已有技能 | 重构 skill、优化技能、改进 skill |
 
 ## 调用流程
 
