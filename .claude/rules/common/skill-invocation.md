@@ -10,6 +10,15 @@
 3. **不要猜测**：不确定是否有对应技能时，查阅下方技能列表再决定
 4. **单一技能**：每次调用一个技能；如需多个技能协作，按顺序逐个调用
 
+## Plugin Skills 命名空间
+
+Plugin 中的 skills 会显示为 `/plugin-name:skill-name` 的形式，而不是直接的 `/skill-name`。
+
+例如，如果 plugin 名为 `obsidian`，其中的 skill 会显示为：
+- `/obsidian:markdown` (而不是 `obsidian-markdown`)
+- `/obsidian:cli` (而不是 `obsidian-cli`)
+- `/obsidian:bases` (而不是 `obsidian-bases`)
+
 ## 技能列表
 
 #### 图表与可视化
@@ -19,13 +28,13 @@
 | `excalidraw-diagram` | 生成 Excalidraw 流程图、思维导图、架构图 | 画图、流程图、思维导图、Excalidraw、可视化、diagram |
 | `json-canvas` | 生成 JSON Canvas 格式的可视化画布 | canvas、画布、JSON Canvas |
 
-#### Obsidian 相关
+#### Obsidian 相关 (Plugin: obsidian)
 
 | 技能 | 触发场景 | 关键触发词 |
 |------|----------|-----------|
-| `obsidian-markdown` | 处理 Obsidian 特有的 Markdown 语法 | Obsidian、wikilink、双链、嵌入 |
-| `obsidian-cli` | 通过 CLI 操作 Obsidian vault | Obsidian 命令行、vault 操作 |
-| `obsidian-bases` | 处理 Obsidian Bases 数据库 | Bases、数据库、table view |
+| `/obsidian:markdown` | 处理 Obsidian 特有的 Markdown 语法 | Obsidian、wikilink、双链、嵌入 |
+| `/obsidian:cli` | 通过 CLI 操作 Obsidian vault | Obsidian 命令行、vault 操作 |
+| `/obsidian:bases` | 处理 Obsidian Bases 数据库 | Bases、数据库、table view |
 #### 资料研究
 
 | 技能 | 触发场景 | 关键触发词 |
