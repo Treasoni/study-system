@@ -42,6 +42,14 @@ Plugin 中的 skills 会显示为 `/plugin-name:skill-name` 的形式，而不�
 | `research-planner` | 资料收集前的需求澄清与引导 | 想学、帮我整理、研究一下、了解一下、不知道从哪开始、帮我看看、research planning、explore topic |
 | `research-collector` | 多策略高效资料收集 | 收集资料、研究资料、搜集信息、资料整理、research、gather information、collect资料 |
 
+#### 学习笔记工作流
+
+| 技能 | 触发场景 | 关键触发词 |
+|------|----------|-----------|
+| `learning-note-orchestrator` | 学习笔记全流程编排：从意图澄清到最终输出 | 学习笔记、完整流程、从头开始、全流程、orchestrator、workflow、learning notes workflow |
+| `note-assembler` | 将章节组装成完整笔记（由 agent 调用） | 组装、合并章节、收尾、拼装、assemble |
+| `note-beautifier` | 笔记格式转换和美化导出 | 导出、美化、PDF、Word、PPT、排版、格式转换、beautify、export |
+
 
 #### 内容提取
 
