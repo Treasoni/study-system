@@ -16,6 +16,8 @@ paths:
 
 ## 技能列表
 
+> **来源说明**：以下技能由对应插件提供（通过 `.claude/settings.local.json` 的 `enabledPlugins` 启用），而非本地 `.claude/skills/` 目录中的自定义技能。
+
 ### 文件处理
 
 | 技能 | 触发场景 | 关键触发词 |
