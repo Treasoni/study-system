@@ -48,7 +48,7 @@ Plugin 中的 skills 会显示为 `/plugin-name:skill-name` 的形式，而不�
 |------|----------|-----------|
 | `learning-note-orchestrator` | 学习笔记全流程编排：从意图澄清到最终输出 | 学习笔记、完整流程、从头开始、全流程、orchestrator、workflow、learning notes workflow |
 | `note-assembler` | 将章节组装成完整笔记（由 agent 调用） | 组装、合并章节、收尾、拼装、assemble |
-| `note-beautifier` | 笔记格式转换和美化导出 | 导出、美化、PDF、Word、PPT、排版、格式转换、beautify、export |
+| `note-beautifier` | Obsidian 笔记智能美化专家 | 美化、Obsidian、优化格式、笔记美化、beautify |
 
 
 #### 内容提取
