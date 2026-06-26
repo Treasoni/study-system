@@ -9,7 +9,7 @@ description: 查看当前环境中可用于资料收集的工具，包括内置�
 
 ## 触发条件
 
-当用户提出以下类型的请求时，调用此技能：
+当用户提出以下类型的请求时，调用此技能:
 
 - "有哪些工具可以收集资料"
 - "查看可用的资料收集工具"
@@ -50,7 +50,7 @@ description: 查看当前环境中可用于资料收集的工具，包括内置�
 
 ### Step 2: 生成规则文档
 
-将发现的工具信息整理成规则文档，保存到 `.claude/rules/common/research-tools.md`：
+将发现的工具信息整理成规则文档，保存到 `.claude/rules/research-tools.md`：
 
 ```markdown
 ---
@@ -143,7 +143,7 @@ paths:
 - **defuddle**: 网页正文提取
 
 ---
-规则文档已保存到: .claude/rules/common/research-tools.md
+规则文档已保存到: .claude/rules/research-tools.md
 ```
 
 ## 注意事项
