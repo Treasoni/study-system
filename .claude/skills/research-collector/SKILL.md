@@ -80,7 +80,7 @@ description: 使用多策略进行高效资料收集：Fork Subagent 隔离收�
 
 ### 策略 4: 本地缓存复用
 
-**缓存目录**: `/Users/zhqznc/code/study-system/research_notes/`
+**缓存目录**: `${RESEARCH_NOTES_DIR}`（从 `.env` 读取，默认为 `./research_notes/`）
 
 **文件命名**: `{主题}-{日期}.md`
 
@@ -172,7 +172,7 @@ Subagent 4: 搜索 "{关键词4} 常见问题 问题排查"
 
 将结果写入本地文件:
 ```
-/Users/zhqznc/code/study-system/research_notes/{主题}-{日期}.md
+${RESEARCH_NOTES_DIR}/{主题}-{日期}.md
 ```
 
 ## 输出示例
