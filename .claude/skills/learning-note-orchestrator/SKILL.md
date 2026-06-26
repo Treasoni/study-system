@@ -29,12 +29,18 @@ description: 学习笔记全流程编排器：从意图澄清到最终输出的�
 
 ```
 阶段 0: 意图澄清      → 调用 /research-planner
+    ↓ 输出: 00_intent.md
 阶段 1: 探测式收集    → 调用 /research-collector
 阶段 2: 深度收集      → 调用 /research-collector
+    ↓ 输出: 02_deep_research.md
 阶段 3: 大纲生成      → 调用 outline-generator agent
+    ↓ 输出: 03_outline.md
 阶段 4: 逐章写作      → 调用 chapter-writer agent
+    ↓ 输出: chapters/{N}_{章节名}.md
 阶段 5: 收尾组装      → 调用 note-assembler agent
+    ↓ 输出: output/final_note.md
 阶段 6: 美化输出      → 调用 /note-beautifier
+    ↓ 输出: output/final_note.{format}
 ```
 
 ## 详细执行步骤

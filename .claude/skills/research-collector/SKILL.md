@@ -80,9 +80,9 @@ description: 使用多策略进行高效资料收集：Fork Subagent 隔离收�
 
 ### 策略 4: 本地缓存复用
 
-**缓存目录**: `${RESEARCH_NOTES_DIR}`（从 `.env` 读取，默认为 `./research_notes/`）
+**缓存目录**: `/workspace/learning_notes/`
 
-**文件命名**: `{主题}-{日期}.md`
+**文件命名**: `02_deep_research.md`（固定命名，供下游组件读取）
 
 **缓存结构**:
 ```markdown
@@ -172,8 +172,10 @@ Subagent 4: 搜索 "{关键词4} 常见问题 问题排查"
 
 将结果写入本地文件:
 ```
-${RESEARCH_NOTES_DIR}/{主题}-{日期}.md
+/workspace/learning_notes/02_deep_research.md
 ```
+
+**注意**: 使用固定文件名 `02_deep_research.md`，方便下游组件（outline-generator、chapter-writer）直接读取。
 
 ## 输出示例
 
@@ -203,7 +205,7 @@ ${RESEARCH_NOTES_DIR}/{主题}-{日期}.md
 [总结关键发现、最佳实践、常见问题]
 
 ---
-✅ 资料已缓存到: research_notes/react18-2025-01-15.md
+✅ 资料已缓存到: /workspace/learning_notes/02_deep_research.md
 ```
 
 ## 高级用法

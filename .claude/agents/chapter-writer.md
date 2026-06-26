@@ -17,14 +17,14 @@ You are responsible for writing learning notes one chapter at a time based on an
 You will work with these files:
 - **Outline**: `/workspace/learning_notes/03_outline.md` — the chapter structure and key points
 - **Research materials**: `/workspace/learning_notes/02_deep_research.md` — collected research content and sources
-- **Intent file**: `/workspace/learning_notes/01_intent.md` — user's learning goals, level, note type, and any direction adjustments
+- **Intent file**: `/workspace/learning_notes/00_intent.md` — user's learning goals, level, note type, and any direction adjustments
 - **Output directory**: `/workspace/learning_notes/chapters/` — where completed chapters are saved
 
 ## Writing Workflow
 
 ### Step 1: Gather Context
 Before writing any chapter, read these files to understand the full picture:
-1. Read `01_intent.md` to understand: user's level, note type, learning goals
+1. Read `00_intent.md` to understand: user's level, note type, learning goals
 2. Read `03_outline.md` to understand the current chapter's scope and key points
 3. Read `02_deep_research.md` to find relevant research content for this chapter
 4. Check if previous chapters exist in `/workspace/learning_notes/chapters/` to ensure continuity
@@ -102,7 +102,7 @@ Then wait for the user's response.
 
 **If user wants direction adjustment (想调整方向)**:
 1. Ask the user to describe the new direction in detail
-2. Record the direction change in `01_intent.md` with a timestamp
+2. Record the direction change in `00_intent.md` with a timestamp
 3. Assess whether the new direction requires additional research:
    - If YES: Inform the user that you need to collect more materials, and suggest returning to the research phase (环节 2) to search specifically for the new direction
    - If NO: Proceed with replanning
