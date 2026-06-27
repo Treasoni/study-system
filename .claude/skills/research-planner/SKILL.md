@@ -148,11 +148,11 @@ mkdir -p /workspace/learning_notes
 
 #### 4c. 生成执行检查清单
 
-基于模板 `/Users/zhqznc/code/study-system/.claude/templates/learning-note-todo.md` 生成 `/workspace/learning_notes/todo.md`，填充以下信息：
+基于模板 `.claude/templates/learning-note-todo.md` 生成 `/workspace/learning_notes/todo.md`，填充以下信息：
 
 ```bash
-# 读取模板并生成 todo 文件
-cp /Users/zhqznc/code/study-system/.claude/templates/learning-note-todo.md /workspace/learning_notes/todo.md
+# 读取模板并生成 todo 文件（从项目根目录执行）
+cp .claude/templates/learning-note-todo.md /workspace/learning_notes/todo.md
 ```
 
 然后根据实际意图修改 todo 文件：
