@@ -11,7 +11,9 @@ description: 资料收集前的需求澄清与探测式引导。通过轻量级�
 
 本技能只负责 **意图澄清与方向引导**，不涉及后续的资料收集、大纲生成、笔记写作等环节。
 
-**输出产物**: `/workspace/learning_notes/00_intent.md`
+**输出产物**:
+- `/workspace/learning_notes/00_intent.md` — 意图文件
+- `/workspace/learning_notes/todo.md` — 执行检查清单（基于 todo 模板生成）
 
 **下游衔接**: 用户确认意图后，由 `/research-collector` 接力进行深度资料收集。
 
@@ -141,6 +143,24 @@ mkdir -p /workspace/learning_notes
 2. {方向 2}
 
 ✅ 意图文件已保存: `/workspace/learning_notes/00_intent.md`
+
+---
+
+#### 4c. 生成执行检查清单
+
+基于模板 `/Users/zhqznc/code/study-system/.claude/templates/learning-note-todo.md` 生成 `/workspace/learning_notes/todo.md`，填充以下信息：
+
+```bash
+# 读取模板并生成 todo 文件
+cp /Users/zhqznc/code/study-system/.claude/templates/learning-note-todo.md /workspace/learning_notes/todo.md
+```
+
+然后根据实际意图修改 todo 文件：
+- `{topic}` → 用户学习主题
+- `{date}` → 当前日期
+- `{current_phase}` → "阶段 0：意图澄清"
+- 阶段 0 的状态标记为 "✅ 已完成"
+- 其他阶段保持 "⬜ 未开始"
 
 ---
 
