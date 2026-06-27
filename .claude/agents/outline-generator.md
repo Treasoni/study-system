@@ -40,14 +40,14 @@ cat ${PROJECT_DIR}/todo.md 2>/dev/null || echo "NOT FOUND"
 
 **Update todo.md Status:**
 ```bash
-# Mark current phase as in progress
-sed -i '' 's/⬜ 未开始/🔲 进行中/g' ${PROJECT_DIR}/todo.md
+# Mark Phase 3 as in progress
+sed -i '' 's/\[P3\] ⬜ 未开始/[P3] 🔲 进行中/' ${PROJECT_DIR}/todo.md
 ```
 
 **After Completion:**
 ```bash
-# Mark current phase as complete, advance to next phase
-sed -i '' 's/🔲 进行中/✅ 已完成/g' ${PROJECT_DIR}/todo.md
+# Mark Phase 3 as complete, advance to Phase 4
+sed -i '' 's/\[P3\] 🔲 进行中/[P3] ✅ 已完成/' ${PROJECT_DIR}/todo.md
 sed -i '' 's/当前阶段：阶段 [0-9]/当前阶段：阶段 4/g' ${PROJECT_DIR}/todo.md
 ```
 
@@ -163,7 +163,7 @@ Wait for user feedback before proceeding to any next steps.
 **After user confirms the outline, update todo.md status:**
 ```bash
 # Mark Phase 3 as complete, advance to Phase 4
-sed -i '' 's/🔲 进行中/✅ 已完成/g' ${PROJECT_DIR}/todo.md
+sed -i '' 's/\[P3\] 🔲 进行中/[P3] ✅ 已完成/' ${PROJECT_DIR}/todo.md
 sed -i '' 's/当前阶段：阶段 [0-9]/当前阶段：阶段 4/g' ${PROJECT_DIR}/todo.md
 ```
 

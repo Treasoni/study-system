@@ -1,22 +1,25 @@
 ---
 name: workflow-orchestrator
-description: 工作流编排器。根据用户需求选择合适的工作流模板，生成对应的 todo.md 执行检查清单。触发词：工作流、流程、开始学习、新建项目、workflow、orchestrator。
+description: 工作流编排器。由各 planner 技能调用，接收工作流名称和参数，从模板生成 todo.md。不直接面向用户。
 ---
 
 # Workflow Orchestrator - 工作流编排器
 
-根据用户需求选择合适的工作流模板，生成对应的 todo.md 执行检查清单。
+接收 planner 传入的工作流参数，定位模板，生成 todo.md 执行检查清单。
 
 ## 核心架构
 
 ```
+各 planner 技能（research-planner / 未来 project-planner ...）
+    │
+    │  传入参数: workflow, topic, depth, level, purpose ...
+    │
+    ▼
 workflow-orchestrator (本技能)
     │
-    ├── 扫描 templates/ 目录
+    ├── 根据 workflow 参数定位模板
     │
-    ├── 分析用户需求
-    │
-    ├── 选择工作流模板
+    ├── sed 替换占位符
     │
     ├── 生成 todo.md
     │
@@ -25,14 +28,11 @@ workflow-orchestrator (本技能)
 
 ## 触发条件
 
-当用户提出以下类型的请求时，调用此技能:
+**本技能不直接面向用户**，由 planner 技能调用：
 
-- "我想学习 XX"
-- "开始学习 React"
-- "新建一个学习项目"
-- "帮我创建一个项目"
-- "我想研究 XX 技术"
-- 任何涉及创建新学习项目的请求
+- `research-planner` 完成意图澄清后，调用本技能生成 todo.md
+- 未来新增的 planner（如 project-planner）同样调用本技能
+- 用户不应直接触发 `/workflow-orchestrator`
 
 ## 核心功能
 
@@ -40,107 +40,139 @@ workflow-orchestrator (本技能)
 
 **模板存储位置**: `templates/` 目录
 
-**当前可用模板**:
+**每个工作流由两个文件组成**:
 
-| 模板名称 | 文件名 | 用途 | 阶段数 |
-|---------|--------|------|--------|
-| learning-note-flow | learning-note-flow.md | 完整学习笔记生产 | 7 (阶段 0-6) |
+| 文件 | 命名 | 用途 | 谁来读 |
+|------|------|------|--------|
+| 工作流说明书 | `{workflow-name}.md` | 定义阶段、检查点、错误处理、技能依赖 | agent / 人（理解流程） |
+| todo 模板 | `{workflow-name}-todo.md` | 带 `{topic}` 等占位符的执行清单 | orchestrator（sed 替换生成 todo.md） |
 
-**模板格式要求**:
-- 每个模板必须包含: 工作流名称、描述、各阶段定义
+**当前可用工作流**:
+
+| 工作流 | 说明书 | todo 模板 | 用途 | 阶段数 |
+|-------|--------|----------|------|--------|
+| learning-note-flow | learning-note-flow.md | learning-note-todo.md | 完整学习笔记生产 | 7 (阶段 0-6) |
+
+**说明书格式要求**:
+- 必须包含: 工作流名称、描述、各阶段定义
 - 每个阶段必须包含: 名称、负责技能、检查项、输出文件、状态
 - 支持自定义阶段数和检查项
 
-### 功能 2: 智能选择工作流
+**todo 模板格式要求**:
+- 必须使用占位符: `{topic}` `{project_slug}` `{date}` `{current_phase}`
+- 检查项必须与同名说明书各阶段一一对应
+- 初始状态统一为 `⬜ 未开始`
 
-**分析维度**:
+### 功能 2: 接收 planner 参数
+
+orchestrator 不负责选择工作流——调用方 planner 会明确传入 `workflow` 参数。
+
+**planner 传入的参数结构**:
 ```yaml
-用户输入:
-  - 学习目标 (要学什么)
-  - 学习深度 (入门/上手/精通)
-  - 输出类型 (笔记/代码/项目)
-  - 时间约束
+必传:
+  workflow: "learning-note-flow"    # 由 planner 指明要使用哪个工作流
+  topic: "React Server Components"  # 主题
 
-匹配规则:
-  - 学习类需求 → learning-note-flow
-  - 项目类需求 → (未来扩展)
-  - 阅读类需求 → (未来扩展)
+可选（各 planner 自行决定传哪些）:
+  depth: "精通"          # 学习深度
+  level: "有了解"        # 用户基础
+  purpose: "实战"        # 目的
 ```
 
-**选择逻辑**:
-1. 扫描 templates/ 目录获取所有可用模板
-2. 解析每个模板的适用场景
-3. 根据用户输入匹配最合适的模板
-4. 如果没有匹配，提示用户可用的工作流
+**orchestrator 的职责**: 收到参数 → 定位 workflow 对应的模板 → 生成 todo.md。
 
 ### 功能 3: 生成 todo.md
 
-**从模板生成定制化的 todo.md，包含**:
-- 项目基本信息 (主题、slug、创建时间)
-- 各阶段状态 (初始为 ⬜ 未开始)
-- 当前阶段标记
-- 异常记录表
-- 方向调整记录表
-- 最终产出表
+根据 workflow 参数定位说明书和 todo 模板，用 sed 替换占位符生成定制化 todo.md。
 
 **生成逻辑**:
+
+> 路径约定：模板位于本 skill 目录下，项目产物位于 `/workspace/` 下（绝对路径）。
+
 ```bash
+# 0. planner 传入的参数
+WORKFLOW="${1:-learning-note-flow}"   # 工作流名称
+TOPIC="${2}"                          # 主题
+
 # 1. 生成项目 slug
 PROJECT_SLUG=$(echo "$TOPIC" | tr '[:upper:]' '[:lower:]' | tr ' ' '-')
 
-# 2. 创建项目目录
-mkdir -p /workspace/${PROJECT_SLUG}
+# 2. 定位模板文件（以 workflow 名称匹配）
+FLOW_DOC=".claude/skills/workflow-orchestrator/templates/${WORKFLOW}.md"
+TODO_TEMPLATE=".claude/skills/workflow-orchestrator/templates/${WORKFLOW}-todo.md"
 
-# 3. 读取模板并替换变量
-sed -e "s/{topic}/$TOPIC/g" \
-    -e "s/{project_slug}/$PROJECT_SLUG/g" \
+# 3. 验证模板存在
+if [ ! -f "$TODO_TEMPLATE" ]; then
+    echo "错误: 工作流 '${WORKFLOW}' 的 todo 模板不存在"
+    echo "请确保 templates/ 下有 ${WORKFLOW}-todo.md"
+    exit 1
+fi
+
+# 4. 创建项目目录
+PROJECT_DIR="/workspace/${PROJECT_SLUG}"
+mkdir -p "${PROJECT_DIR}"
+
+# 5. 读取 todo 模板并替换占位符，生成 todo.md
+sed -e "s/{topic}/${TOPIC}/g" \
+    -e "s/{project_slug}/${PROJECT_SLUG}/g" \
     -e "s/{date}/$(date +%Y-%m-%d)/g" \
     -e "s/{current_phase}/阶段 0/g" \
-    templates/learning-note-flow.md > /workspace/${PROJECT_SLUG}/todo.md
+    -e "s/{completed_chapters}/0/g" \
+    -e "s/{total_chapters}/待大纲确定/g" \
+    "${TODO_TEMPLATE}" > "${PROJECT_DIR}/todo.md"
+
+# 注：{total_chapters} 和 {completed_chapters} 会在运行时由对应阶段更新：
+# - 阶段 3 (outline-generator): 根据大纲统计章节数 → 替换 {total_chapters}
+# - 阶段 4 (chapter-writer): 每完成一章 → 递增 {completed_chapters}
 ```
 
 ## 工作流程
 
-### Step 1: 读取可用模板
+### Step 1: 接收 planner 传入的参数
 
-扫描 `templates/` 目录，读取所有工作流模板文件。
+orchestrator 从调用方 planner 接收结构化参数：
 
-```bash
-# 列出所有可用模板
-ls -1 templates/*.md
+```yaml
+必传:
+  workflow: "learning-note-flow"      # 指明使用哪个工作流
+
+强烈建议:
+  topic: "React Server Components"    # 主题/标题
+
+可选:
+  project_slug: "react-server-components"  # 如不传，由 orchestrator 根据 topic 自动生成
+  depth: "精通"       # 学习深度
+  level: "有了解"     # 用户基础
+  purpose: "实战"     # 目的/类型
 ```
 
-**输出**: 可用模板列表及其描述
+### Step 2: 定位模板
 
-### Step 2: 分析用户需求
+根据 `workflow` 参数定位说明书和 todo 模板：
 
-**收集关键信息**:
-- 学习主题是什么？
-- 学习深度 (入门/上手/精通)
-- 输出期望 (笔记/代码/项目)
-- 时间限制
+```bash
+# 根据 workflow 参数定位模板
+FLOW_DOC=".claude/skills/workflow-orchestrator/templates/${WORKFLOW}.md"
+TODO_TEMPLATE=".claude/skills/workflow-orchestrator/templates/${WORKFLOW}-todo.md"
 
-**需求分类**:
-- **学习类**: 想要系统学习某个技术/概念
-- **项目类**: 想要从零开始做一个项目
-- **阅读类**: 想要阅读论文/书籍/文章
-- **调研类**: 想要进行技术选型/对比分析
+# 验证存在
+if [ ! -f "$TODO_TEMPLATE" ]; then
+    echo "错误: 工作流 '${WORKFLOW}' 未配置"
+    ls -1 .claude/skills/workflow-orchestrator/templates/*-todo.md | sed 's/.*\///;s/-todo.md//'
+    echo "以上为可用工作流"
+    exit 1
+fi
+```
 
-### Step 3: 选择并定制工作流
+### Step 3: 生成 todo.md
 
-1. **选择模板**: 根据需求分类选择最匹配的模板
-2. **定制内容**: 根据用户输入调整阶段内容
-3. **生成 todo.md**: 使用模板生成项目特定的 todo.md
+sed 替换占位符，从 todo 模板生成项目特定的 todo.md（具体 sed 逻辑见"功能 3"）。
 
 ### Step 4: 创建项目目录
 
 ```bash
-# 创建项目目录
 PROJECT_DIR="/workspace/${PROJECT_SLUG}"
 mkdir -p ${PROJECT_DIR}
-
-# 生成 todo.md
-# (从模板读取，替换变量)
 ```
 
 ### Step 5: 输出结果
@@ -213,126 +245,79 @@ mkdir -p ${PROJECT_DIR}
 ## 与其他技能的关系
 
 ```
-用户输入学习主题
+各 planner（领域特异性）
+    │
+    │  research-planner ──→ workflow="learning-note-flow"
+    │  project-planner  ──→ workflow="project-flow" (未来)
     │
     ▼
-research-planner (意图澄清)
+workflow-orchestrator (本技能)
     │
-    ├──→ workflow-orchestrator (本技能)
-    │       │
-    │       ├── 扫描 templates/
-    │       ├── 选择工作流
-    │       └── 生成 todo.md
-    │
-    └──→ 生成 00_intent.md
+    ├── 读 templates/{workflow}.md (说明书)
+    ├── 读 templates/{workflow}-todo.md (todo 模板)
+    ├── sed 替换占位符
+    └── 生成 /workspace/{slug}/todo.md
          │
          ▼
-research-collector (阶段 1-2)
-         │
-         ▼
-outline-generator (阶段 3)
-         │
-         ▼
-chapter-writer (阶段 4)
-         │
-         ▼
-note-assembler (阶段 5)
-         │
-         ▼
-note-beautifier (阶段 6)
+按 todo.md 各阶段执行:
+research-collector → outline-generator → chapter-writer → note-assembler → note-beautifier
 ```
 
 ## 调用示例
 
-### 示例 1: 创建学习项目
+### 示例 1: research-planner 调用
 
 ```markdown
-用户：我想学习 React Server Components
+research-planner 完成意图澄清后:
 
-助手：
-1. 扫描可用工作流模板
-   - learning-note-flow (学习笔记生产)
+调用 workflow-orchestrator:
+  参数:
+    workflow: learning-note-flow
+    topic: React Server Components
+    depth: 上手
+    level: 有了解
+    purpose: 实战
 
-2. 分析用户需求
-   - 学习主题: React Server Components
-   - 学习深度: 待确认
-   - 输出类型: 学习笔记
-
-3. 选择 learning-note-flow 模板
-
-4. 生成 /workspace/react-server-components/todo.md
-
-5. 返回项目路径和后续步骤
+orchestrator:
+  1. 定位模板:
+     templates/learning-note-flow.md (说明书)
+     templates/learning-note-todo.md (todo 模板)
+  2. sed 替换生成 /workspace/react-server-components/todo.md
+  3. 返回项目路径
 ```
 
 ### 示例 2: 查看可用工作流
 
 ```markdown
-用户：有哪些可用的工作流？
+查看 orchestrator templates/ 目录即可:
 
-助手：
-当前可用的工作流:
+  templates/
+    learning-note-flow.md       ← 说明书
+    learning-note-todo.md       ← todo 模板
 
-| 工作流 | 用途 | 阶段数 |
-|-------|------|--------|
-| learning-note-flow | 完整学习笔记生产 | 7 |
-
-使用方式:
-- 运行 `/research-planner` 创建新项目
-- 系统会自动选择合适的工作流
-
-添加新工作流:
-- 在 `.claude/skills/workflow-orchestrator/templates/` 目录添加模板文件
-- 遵循模板格式规范
+每个工作流一对文件。规划添加新工作流时，同时创建这俩文件 + 对应的 planner。
 ```
 
 ## 扩展指南
 
-### 添加新工作流
+### 添加新工作流（完整流程）
 
-1. **创建模板文件**:
+1. **创建模板文件对**:
    ```bash
-   # 在 templates/ 目录创建新模板
-   touch .claude/skills/workflow-orchestrator/templates/{workflow-name}.md
+   WORKFLOW="project-flow"
+   touch .claude/skills/workflow-orchestrator/templates/${WORKFLOW}.md        # 说明书
+   touch .claude/skills/workflow-orchestrator/templates/${WORKFLOW}-todo.md   # todo 模板
    ```
 
-2. **遵循模板格式**:
-   - 包含工作流描述
-   - 定义各阶段 (名称、负责技能、检查项、输出文件)
-   - 说明目录结构
+2. **写说明书**: 定义阶段、检查项、技能依赖（格式见"模板格式规范"）
 
-3. **更新 SKILL.md**:
-   - 在"当前可用模板"表格中添加新行
-   - 说明触发条件和适用场景
+3. **写 todo 模板**: 带 `{topic}` `{project_slug}` `{date}` `{current_phase}` 占位符
 
-4. **测试验证**:
-   - 运行 `/research-planner` 测试新工作流
-   - 验证 todo.md 生成正确
-   - 检查阶段依赖关系
+4. **创建对应 planner**: 在 `.claude/skills/` 下新建 planner skill，负责该领域的意图澄清，完成后调用 orchestrator 并传入 `workflow="project-flow"`
 
-### 模板示例
+5. **更新 CLAUDE.md**: 在"可用工作流"表格中添加新行
 
-```markdown
-# 项目实战工作流
-
-## 工作流描述
-
-从零开始完成一个完整项目的流程。
-
-## 阶段定义
-
-### 阶段 0: 需求分析
-- **负责技能**: /research-planner
-- **检查项**:
-  - [ ] 项目目标已明确
-  - [ ] 技术栈已确定
-  - [ ] 功能范围已界定
-- **输出文件**: `00_requirements.md`
-- **状态**: ⬜ 未开始
-
-### 阶段 1: 设计规划
-...
-```
+6. **测试**: 通过对应 planner 触发，验证 todo.md 生成正确
 
 ## 注意事项
 

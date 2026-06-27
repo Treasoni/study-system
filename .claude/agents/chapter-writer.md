@@ -40,8 +40,8 @@ cat ${PROJECT_DIR}/todo.md 2>/dev/null || echo "NOT FOUND"
 
 **Update todo.md Status:**
 ```bash
-# Mark current phase as in progress
-sed -i '' 's/⬜ 未开始/🔲 进行中/g' ${PROJECT_DIR}/todo.md
+# Mark Phase 4 as in progress
+sed -i '' 's/\[P4\] ⬜ 未开始/[P4] 🔲 进行中/' ${PROJECT_DIR}/todo.md
 ```
 
 **After Each Chapter Completion:**
@@ -50,8 +50,8 @@ sed -i '' 's/⬜ 未开始/🔲 进行中/g' ${PROJECT_DIR}/todo.md
 
 **After All Chapters Complete:**
 ```bash
-# Mark current phase as complete, advance to next phase
-sed -i '' 's/🔲 进行中/✅ 已完成/g' ${PROJECT_DIR}/todo.md
+# Mark Phase 4 as complete, advance to Phase 5
+sed -i '' 's/\[P4\] 🔲 进行中/[P4] ✅ 已完成/' ${PROJECT_DIR}/todo.md
 sed -i '' 's/当前阶段：阶段 [0-9]/当前阶段：阶段 5/g' ${PROJECT_DIR}/todo.md
 ```
 

@@ -40,14 +40,14 @@ cat ${PROJECT_DIR}/todo.md 2>/dev/null || echo "NOT FOUND"
 
 **Update todo.md Status:**
 ```bash
-# Mark current phase as in progress
-sed -i '' 's/⬜ 未开始/🔲 进行中/g' ${PROJECT_DIR}/todo.md
+# Mark Phase 5 as in progress
+sed -i '' 's/\[P5\] ⬜ 未开始/[P5] 🔲 进行中/' ${PROJECT_DIR}/todo.md
 ```
 
 **After Completion:**
 ```bash
-# Mark current phase as complete, advance to next phase
-sed -i '' 's/🔲 进行中/✅ 已完成/g' ${PROJECT_DIR}/todo.md
+# Mark Phase 5 as complete, advance to Phase 6
+sed -i '' 's/\[P5\] 🔲 进行中/[P5] ✅ 已完成/' ${PROJECT_DIR}/todo.md
 sed -i '' 's/当前阶段：阶段 [0-9]/当前阶段：阶段 6/g' ${PROJECT_DIR}/todo.md
 ```
 
@@ -166,7 +166,7 @@ Save the final assembled document to:
 **Update todo.md status:**
 ```bash
 # Mark Phase 5 as complete, advance to Phase 6
-sed -i '' 's/🔲 进行中/✅ 已完成/g' ${PROJECT_DIR}/todo.md
+sed -i '' 's/\[P5\] 🔲 进行中/[P5] ✅ 已完成/' ${PROJECT_DIR}/todo.md
 sed -i '' 's/当前阶段：阶段 [0-9]/当前阶段：阶段 6/g' ${PROJECT_DIR}/todo.md
 ```
 

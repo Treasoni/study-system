@@ -142,15 +142,21 @@ cat ${PROJECT_DIR}/todo.md 2>/dev/null || echo "不存在"
 
 **更新 todo.md 状态：**
 ```bash
-# 将当前阶段标记为进行中
-sed -i '' 's/⬜ 未开始/🔲 进行中/g' ${PROJECT_DIR}/todo.md
+# 将当前阶段标记为进行中（根据实际执行的阶段选择 [P1] 或 [P2]）
+# 阶段 1（探测式收集）：
+sed -i '' 's/\[P1\] ⬜ 未开始/[P1] 🔲 进行中/' ${PROJECT_DIR}/todo.md
+# 阶段 2（深度收集）：
+sed -i '' 's/\[P2\] ⬜ 未开始/[P2] 🔲 进行中/' ${PROJECT_DIR}/todo.md
 ```
 
 **完成后更新状态：**
 ```bash
-# 将当前阶段标记为完成，推进到下一阶段
-sed -i '' 's/🔲 进行中/✅ 已完成/g' ${PROJECT_DIR}/todo.md
-sed -i '' 's/当前阶段：阶段 [0-9]/当前阶段：阶段 N+1/g' ${PROJECT_DIR}/todo.md
+# 将当前阶段标记为完成（根据实际执行的阶段选择 [P1] 或 [P2]）
+# 阶段 1 完成：
+sed -i '' 's/\[P1\] 🔲 进行中/[P1] ✅ 已完成/' ${PROJECT_DIR}/todo.md
+# 阶段 2 完成：
+sed -i '' 's/\[P2\] 🔲 进行中/[P2] ✅ 已完成/' ${PROJECT_DIR}/todo.md
+sed -i '' 's/当前阶段：阶段 [0-9]/当前阶段：阶段 3/g' ${PROJECT_DIR}/todo.md
 ```
 
 ---
@@ -223,7 +229,7 @@ Subagent 4: 搜索 "{关键词4} 常见问题 问题排查"
 **更新 todo.md 状态：**
 ```bash
 # 将当前阶段标记为完成，推进到下一阶段
-sed -i '' 's/🔲 进行中/✅ 已完成/g' ${PROJECT_DIR}/todo.md
+sed -i '' 's/\[P2\] 🔲 进行中/[P2] ✅ 已完成/' ${PROJECT_DIR}/todo.md
 # 根据实际执行阶段更新当前阶段
 sed -i '' 's/当前阶段：阶段 [0-9]/当前阶段：阶段 3/g' ${PROJECT_DIR}/todo.md
 ```

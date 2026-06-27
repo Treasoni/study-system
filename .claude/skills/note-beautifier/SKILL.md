@@ -151,14 +151,14 @@ cat ${PROJECT_DIR}/todo.md 2>/dev/null || echo "不存在"
 
 **更新 todo.md 状态：**
 ```bash
-# 将当前阶段标记为进行中
-sed -i '' 's/⬜ 未开始/🔲 进行中/g' ${PROJECT_DIR}/todo.md
+# 将阶段 6 标记为进行中
+sed -i '' 's/\[P6\] ⬜ 未开始/[P6] 🔲 进行中/' ${PROJECT_DIR}/todo.md
 ```
 
 **完成后更新状态：**
 ```bash
-# 将当前阶段标记为完成
-sed -i '' 's/🔲 进行中/✅ 已完成/g' ${PROJECT_DIR}/todo.md
+# 将阶段 6 标记为完成
+sed -i '' 's/\[P6\] 🔲 进行中/[P6] ✅ 已完成/' ${PROJECT_DIR}/todo.md
 ```
 
 ---
@@ -336,7 +336,7 @@ sed -i '' 's/🔲 进行中/✅ 已完成/g' ${PROJECT_DIR}/todo.md
 **Update todo.md status after beautification:**
 ```bash
 # Mark Phase 6 as complete (all phases done!)
-sed -i '' 's/🔲 进行中/✅ 已完成/g' ${PROJECT_DIR}/todo.md
+sed -i '' 's/\[P6\] 🔲 进行中/[P6] ✅ 已完成/' ${PROJECT_DIR}/todo.md
 ```
 
 ## 美化模板库
@@ -435,25 +435,19 @@ sed -i '' 's/🔲 进行中/✅ 已完成/g' ${PROJECT_DIR}/todo.md
 
 ## 与其他技能的关系
 
+note-beautifier 是工作流的最后一个阶段（阶段 6），接收 note-assembler 的输出：
+
 ```
-research-collector (资料收集)
-    ↓ 生成研究素材
-note-beautifier (本技能 - 协调层)
-    ↓ 分析笔记类型
-    ↓ 生成美化方案
+note-assembler (阶段 5 - 组装)
+    ↓ 输出 output/final_note.md
+note-beautifier (本技能 - 阶段 6)
+    ↓ 分析笔记类型 & 生成美化方案
     ↓
     ├──→ /obsidian:markdown (Callout、双链、标签)
     ├──→ /obsidian:cli (文件组织)
     └──→ /obsidian:bases (Dataview 查询)
     ↓
-Obsidian 美化笔记
-    ↓
-note-assembler (组装)
-    ↓ 组装成完整笔记
-    ↓
-note-beautifier (再次美化协调)
-    ↓
-最终输出
+Obsidian 美化笔记 → 最终输出
 ```
 
 ## 调用示例

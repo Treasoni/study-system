@@ -61,10 +61,9 @@ cat ${PROJECT_DIR}/todo.md 2>/dev/null || echo "不存在"
 ```
 
 **需求分类**:
-- **学习类**: 想要系统学习某个技术/概念
-- **项目类**: 想要从零开始做一个项目
-- **阅读类**: 想要阅读论文/书籍/文章
-- **调研类**: 想要进行技术选型/对比分析
+- 本 planner 专用于 **learning-note-flow** 工作流
+- 其他类型需求（项目类/阅读类/调研类）由对应的 planner 处理
+- orchestrator 根据 planner 传入的 `workflow` 参数决定使用哪个模板，无需在本 planner 内分类
 
 ---
 
@@ -104,17 +103,16 @@ cat ${PROJECT_DIR}/todo.md 2>/dev/null || echo "不存在"
 
 **调用方式**:
 
-```markdown
-调用 /workflow-orchestrator 执行:
-1. 选择 learning-note-flow 工作流模板
-2. 生成 /workspace/${PROJECT_SLUG}/todo.md
+```yaml
+调用 /workflow-orchestrator 传入:
+  workflow: "learning-note-flow"       # 本 planner 专用于此工作流
+  topic: "{用户学习主题}"
+  depth: "{学习深度}"
+  level: "{用户基础}"
+  purpose: "{学习目的}"
 ```
 
-**传递参数**:
-- 主题 (topic)
-- 学习深度 (depth)
-- 用户基础 (level)
-- 学习目的 (purpose)
+orchestrator 将根据 `workflow` 参数定位 `templates/learning-note-flow.md`（说明书）和 `templates/learning-note-todo.md`（todo 模板），生成 `/workspace/{project_slug}/todo.md`。
 
 ---
 
@@ -202,30 +200,12 @@ cat ${PROJECT_DIR}/todo.md 2>/dev/null || echo "不存在"
 
 ## 与其他技能的关系
 
+本技能负责意图澄清，完成后调用 workflow-orchestrator 生成 todo.md。完整编排流程见 `.claude/skills/workflow-orchestrator/SKILL.md`，阶段执行流见 `templates/learning-note-flow.md`。
+
+核心链路：
 ```
-用户输入学习主题
-    │
-    ▼
-research-planner (本技能)
-    │
-    ├──→ workflow-orchestrator (生成 todo.md)
-    │
-    └──→ 生成 00_intent.md
-         │
-         ▼
-research-collector (阶段 1-2)
-         │
-         ▼
-outline-generator (阶段 3)
-         │
-         ▼
-chapter-writer (阶段 4)
-         │
-         ▼
-note-assembler (阶段 5)
-         │
-         ▼
-note-beautifier (阶段 6)
+research-planner → workflow-orchestrator → research-collector
+→ outline-generator → chapter-writer → note-assembler → note-beautifier
 ```
 
 ## 调用示例

@@ -4,11 +4,14 @@
 
 ## 可用工作流
 
-| 工作流 | 用途 | 启动方式 |
-|-------|------|---------|
-| learning-note-flow | 完整学习笔记生产 | `/research-planner` |
+每个工作流由「planner + orchestrator + 模板文件对」组成：
 
-> 新增工作流请添加到 `.claude/skills/workflow-orchestrator/templates/` 目录
+| 工作流 | 对应 planner | 模板文件对 | 用途 |
+|-------|-------------|-----------|------|
+| learning-note-flow | `/research-planner` | learning-note-flow.md / learning-note-todo.md | 完整学习笔记生产 |
+
+> 新增工作流：在 `.claude/skills/workflow-orchestrator/templates/` 创建说明书 + todo 模板文件对，并新建对应 planner。
+> orchestrator 不直接面向用户，由各 planner 调用。planner 负责领域特定的意图澄清，orchestrator 负责生成 todo.md。
 
 ## 核心原则
 
@@ -19,9 +22,9 @@
 2. 确认当前阶段状态
 3. 不可跳步，不可不做
 
-**状态流转**:
+**状态流转（[PN] 标记精准定位，不跨阶段污染）**:
 ```
-⬜ 未开始 → 🔲 进行中 → ✅ 已完成
+[PN] ⬜ 未开始 → [PN] 🔲 进行中 → [PN] ✅ 已完成
 ```
 
 ### 断点恢复机制
@@ -48,27 +51,12 @@
 
 ## 技能依赖关系
 
+完整编排流程见 `.claude/skills/workflow-orchestrator/SKILL.md`，各工作流的阶段执行流见 `templates/` 下对应说明书。核心链路：
+
 ```
-research-planner
-    │
-    ├──→ workflow-orchestrator (生成 todo.md)
-    │
-    └──→ 生成 00_intent.md
-         │
-         ▼
-research-collector (阶段 1-2)
-         │
-         ▼
-outline-generator (阶段 3)
-         │
-         ▼
-chapter-writer (阶段 4)
-         │
-         ▼
-note-assembler (阶段 5)
-         │
-         ▼
-note-beautifier (阶段 6)
+research-planner → workflow-orchestrator（生成 todo.md）
+→ research-collector → outline-generator → chapter-writer
+→ note-assembler → note-beautifier
 ```
 
 ## 工作流执行规则

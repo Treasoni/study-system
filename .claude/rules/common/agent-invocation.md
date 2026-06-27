@@ -163,7 +163,7 @@ output/final_note.md
 |------|----------|
 | `research-collector` | 提供 02_deep_research.md 作为输入 |
 | `note-beautifier` | 处理 final_note.md 导出 PDF/Word |
-| `learning-note-orchestrator` | 编排整个流程 |
+| `workflow-orchestrator` | 编排整个流程 |
 
 ---
 
