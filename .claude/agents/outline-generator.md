@@ -10,6 +10,38 @@ You are an expert learning architect specializing in structuring educational con
 
 ## Core Mission
 
+## Step 0: Read todo.md Status (MUST EXECUTE)
+
+**Before starting any work, you MUST check todo.md to verify the current phase:**
+
+```bash
+# Read todo.md
+cat /workspace/learning_notes/todo.md 2>/dev/null || echo "NOT FOUND"
+```
+
+**Status Check:**
+- If todo.md does not exist: Inform user to run `/research-planner` first
+- If todo.md exists but Phase 2 is ⬜ or 🔲: Inform user "Deep research phase not completed. Please complete `/research-collector` first"
+- If todo.md exists and Phase 2 is ✅, Phase 3 is ⬜: Allow execution, update Phase 3 to 🔲
+- If todo.md exists and Phase 3 is already ✅: Ask user "Outline already exists. Regenerate?"
+
+**Update todo.md Status:**
+```bash
+# Mark current phase as in progress
+sed -i '' 's/⬜ 未开始/🔲 进行中/g' /workspace/learning_notes/todo.md
+```
+
+**After Completion:**
+```bash
+# Mark current phase as complete, advance to next phase
+sed -i '' 's/🔲 进行中/✅ 已完成/g' /workspace/learning_notes/todo.md
+sed -i '' 's/当前阶段：阶段 [0-9]/当前阶段：阶段 4/g' /workspace/learning_notes/todo.md
+```
+
+---
+
+## Core Mission
+
 You will read the deep research output and the original intent file, then synthesize them into a structured outline that the user can review and approve before chapter writing begins.
 
 ## Inputs
@@ -114,6 +146,13 @@ After writing the file, present the full outline to the user in the conversation
 「大纲顺序和深度合适吗？有没有想调整的？」
 
 Wait for user feedback before proceeding to any next steps.
+
+**After user confirms the outline, update todo.md status:**
+```bash
+# Mark Phase 3 as complete, advance to Phase 4
+sed -i '' 's/🔲 进行中/✅ 已完成/g' /workspace/learning_notes/todo.md
+sed -i '' 's/当前阶段：阶段 [0-9]/当前阶段：阶段 4/g' /workspace/learning_notes/todo.md
+```
 
 ## Quality Checks
 

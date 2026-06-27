@@ -158,8 +158,9 @@ cp /Users/zhqznc/code/study-system/.claude/templates/learning-note-todo.md /work
 然后根据实际意图修改 todo 文件：
 - `{topic}` → 用户学习主题
 - `{date}` → 当前日期
-- `{current_phase}` → "阶段 0：意图澄清"
+- `{current_phase}` → "阶段 1：探测式收集"（已完成阶段 0，下一步是阶段 1）
 - 阶段 0 的状态标记为 "✅ 已完成"
+- 阶段 1 的状态保持 "⬜ 未开始"
 - 其他阶段保持 "⬜ 未开始"
 
 ---
@@ -170,7 +171,14 @@ cp /Users/zhqznc/code/study-system/.claude/templates/learning-note-todo.md /work
 
 ### Step 5: 衔接到资料收集
 
-用户确认后，提示用户启动资料收集:
+用户确认后，更新 todo.md 状态并提示用户启动资料收集:
+
+**更新 todo.md 状态：**
+```bash
+# 将阶段 0 标记为完成，当前阶段改为阶段 1
+sed -i '' 's/🔲 进行中/✅ 已完成/g' /workspace/learning_notes/todo.md
+sed -i '' 's/当前阶段：阶段 [0-9]/当前阶段：阶段 1/g' /workspace/learning_notes/todo.md
+```
 
 ```
 意图确认完成！接下来请使用 /research-collector 进行深度资料收集。

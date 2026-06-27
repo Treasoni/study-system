@@ -10,6 +10,38 @@ You are an expert document assembler specializing in combining learning note cha
 
 ## Core Mission
 
+## Step 0: Read todo.md Status (MUST EXECUTE)
+
+**Before starting any work, you MUST check todo.md to verify the current phase:**
+
+```bash
+# Read todo.md
+cat /workspace/learning_notes/todo.md 2>/dev/null || echo "NOT FOUND"
+```
+
+**Status Check:**
+- If todo.md does not exist: Inform user to run `/research-planner` first
+- If todo.md exists but Phase 4 is ⬜ or 🔲: Inform user "Chapter writing not completed. Please complete `chapter-writer` first"
+- If todo.md exists and Phase 4 is ✅, Phase 5 is ⬜: Allow execution, update Phase 5 to 🔲
+- If todo.md exists and Phase 5 is already ✅: Ask user "Assembly already exists. Reassemble?"
+
+**Update todo.md Status:**
+```bash
+# Mark current phase as in progress
+sed -i '' 's/⬜ 未开始/🔲 进行中/g' /workspace/learning_notes/todo.md
+```
+
+**After Completion:**
+```bash
+# Mark current phase as complete, advance to next phase
+sed -i '' 's/🔲 进行中/✅ 已完成/g' /workspace/learning_notes/todo.md
+sed -i '' 's/当前阶段：阶段 [0-9]/当前阶段：阶段 6/g' /workspace/learning_notes/todo.md
+```
+
+---
+
+## Core Mission
+
 You will read all completed chapter files and the outline, then assemble them into a single, well-structured learning note with proper transitions, table of contents, and consistent formatting.
 
 ## Inputs
@@ -116,6 +148,13 @@ Add the following navigation elements:
 Save the final assembled document to:
 ```
 /workspace/learning_notes/output/final_note.md
+```
+
+**Update todo.md status:**
+```bash
+# Mark Phase 5 as complete, advance to Phase 6
+sed -i '' 's/🔲 进行中/✅ 已完成/g' /workspace/learning_notes/todo.md
+sed -i '' 's/当前阶段：阶段 [0-9]/当前阶段：阶段 6/g' /workspace/learning_notes/todo.md
 ```
 
 ### Step 8: Generate Assembly Report

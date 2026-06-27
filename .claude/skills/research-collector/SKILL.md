@@ -112,6 +112,36 @@ description: 使用多策略进行高效资料收集：Fork Subagent 隔离收�
 
 ## 工作流程
 
+### Step 0: 读取 todo.md 状态（必须执行）
+
+**启动时必须检查 todo.md，确认当前阶段：**
+
+```bash
+# 读取 todo.md
+cat /workspace/learning_notes/todo.md 2>/dev/null || echo "不存在"
+```
+
+**状态检查：**
+- 如果 todo.md 不存在：提示用户先运行 `/research-planner` 创建意图文件
+- 如果 todo.md 存在但阶段 0 为 ⬜ 或 🔲：提示用户"意图阶段未完成，请先完成 `/research-planner`"
+- 如果 todo.md 存在且阶段 0 为 ✅，阶段 1 为 ⬜：允许执行，更新阶段 1 为 🔲 进行中
+- 如果 todo.md 存在且阶段 1 为 ✅，阶段 2 为 ⬜：允许执行，更新阶段 2 为 🔲 进行中
+
+**更新 todo.md 状态：**
+```bash
+# 将当前阶段标记为进行中
+sed -i '' 's/⬜ 未开始/🔲 进行中/g' /workspace/learning_notes/todo.md
+```
+
+**完成后更新状态：**
+```bash
+# 将当前阶段标记为完成，推进到下一阶段
+sed -i '' 's/🔲 进行中/✅ 已完成/g' /workspace/learning_notes/todo.md
+sed -i '' 's/当前阶段：阶段 [0-9]/当前阶段：阶段 N+1/g' /workspace/learning_notes/todo.md
+```
+
+---
+
 ### Step 1: 理解需求
 
 1. 识别用户的**研究主题**
@@ -176,6 +206,14 @@ Subagent 4: 搜索 "{关键词4} 常见问题 问题排查"
 ```
 
 **注意**: 使用固定文件名 `02_deep_research.md`，方便下游组件（outline-generator、chapter-writer）直接读取。
+
+**更新 todo.md 状态：**
+```bash
+# 将当前阶段标记为完成，推进到下一阶段
+sed -i '' 's/🔲 进行中/✅ 已完成/g' /workspace/learning_notes/todo.md
+# 根据实际执行阶段更新当前阶段
+sed -i '' 's/当前阶段：阶段 [0-9]/当前阶段：阶段 3/g' /workspace/learning_notes/todo.md
+```
 
 ## 输出示例
 
