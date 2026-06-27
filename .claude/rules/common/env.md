@@ -21,8 +21,9 @@
 ## 路径规范
 
 1. **禁止**在代码中硬编码绝对路径（如 `/Users/xxx/data/`、`C:\Users\xxx\`）
-2. **文件路径**应通过 `.env` 中的环境变量定义，代码中使用相对路径或环境变量拼接
-3. **示例**：路径变量统一在 `.env` 中管理，代码中通过 `process.env.WORKSPACE_PATH` 引用
+2. **文件路径**应通过 `.env` 中的环境变量定义，使用相对路径（如 `./workspace`）
+3. **示例**：路径变量统一在 `.env` 中管理，代码中通过 `process.env.WORKSPACE_PATH` + `path.resolve()` 引用
+4. **自动配置**：运行项目时，路径基于当前工作目录自动解析，无需手动设置绝对路径
 
 ## 变量命名
 
@@ -56,8 +57,8 @@ APP_NAME=study-system
 APP_PORT=3000
 NODE_ENV=development
 
-# === Paths ===
-# 数据存储根目录（所有文件路径基于此目录拼接）
+# === Paths (relative to project root) ===
+# 所有路径基于项目根目录，不要使用绝对路径
 WORKSPACE_PATH=./workspace
 NOTES_OUTPUT_PATH=${WORKSPACE_PATH}/output
 CHAPTERS_PATH=${WORKSPACE_PATH}/chapters
@@ -65,9 +66,6 @@ CHAPTERS_PATH=${WORKSPACE_PATH}/chapters
 # === API Keys ===
 # Get from: https://platform.minimax.io
 MINIMAX_API_KEY=your-key-here
-
-# === Database ===
-DATABASE_URL=postgresql://user:password@localhost:5432/dbname
 
 # === Debug ===
 DEBUG=false
@@ -86,6 +84,11 @@ for (const key of required) {
     throw new Error(`Missing required env: ${key}`);
   }
 }
+
+// 路径解析：使用 path.resolve 相对路径
+const path = require('path');
+const workspacePath = path.resolve(process.env.WORKSPACE_PATH);
+const outputPath = path.resolve(process.env.NOTES_OUTPUT_PATH);
 ```
 
 ## .gitignore 确保覆盖
