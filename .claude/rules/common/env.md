@@ -18,6 +18,12 @@
 3. **禁止**在日志中打印环境变量值
 4. `.env.example` 中用占位符代替真实值（如 `sk-xxxxx`）
 
+## 路径规范
+
+1. **禁止**在代码中硬编码绝对路径（如 `/Users/xxx/data/`、`C:\Users\xxx\`）
+2. **文件路径**应通过 `.env` 中的环境变量定义，代码中使用相对路径或环境变量拼接
+3. **示例**：路径变量统一在 `.env` 中管理，代码中通过 `process.env.WORKSPACE_PATH` 引用
+
 ## 变量命名
 
 ```bash
@@ -32,6 +38,11 @@ MINIMAX_API_KEY=xxxxx
 # 数据库
 DATABASE_URL=postgresql://localhost:5432/mydb
 
+# 路径（相对路径，不硬编码绝对路径）
+WORKSPACE_PATH=./workspace
+NOTES_OUTPUT_PATH=${WORKSPACE_PATH}/output
+CHAPTERS_PATH=${WORKSPACE_PATH}/chapters
+
 # 布尔值用小写
 DEBUG=true
 FEATURE_X_ENABLED=false
@@ -44,6 +55,12 @@ FEATURE_X_ENABLED=false
 APP_NAME=study-system
 APP_PORT=3000
 NODE_ENV=development
+
+# === Paths ===
+# 数据存储根目录（所有文件路径基于此目录拼接）
+WORKSPACE_PATH=./workspace
+NOTES_OUTPUT_PATH=${WORKSPACE_PATH}/output
+CHAPTERS_PATH=${WORKSPACE_PATH}/chapters
 
 # === API Keys ===
 # Get from: https://platform.minimax.io
@@ -87,3 +104,4 @@ for (const key of required) {
 - [ ] 敏感变量命名带 `_KEY`、`_SECRET`、`_TOKEN` 后缀
 - [ ] 启动时校验必需变量
 - [ ] 不在 `console.log` 中打印环境变量
+- [ ] 文件路径通过环境变量配置，不硬编码绝对路径
