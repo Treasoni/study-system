@@ -10,13 +10,26 @@ You are an expert document assembler specializing in combining learning note cha
 
 ## Core Mission
 
-## Step 0: Read todo.md Status (MUST EXECUTE)
+## Step 0: Read project info and todo.md Status (MUST EXECUTE)
 
-**Before starting any work, you MUST check todo.md to verify the current phase:**
+**Before starting any work, you MUST determine the project folder and check todo.md:**
 
 ```bash
+# Read project slug from intent file
+PROJECT_SLUG=$(grep "项目标识" /workspace/*/00_intent.md 2>/dev/null | head -1 | sed 's/.*：//')
+
+# If multiple projects, prompt user to select
+if [ -z "$PROJECT_SLUG" ]; then
+  echo "Found projects:"
+  ls -d /workspace/*/ 2>/dev/null | xargs -I {} basename {}
+  echo "Please specify project name"
+  exit 1
+fi
+
+PROJECT_DIR="/workspace/${PROJECT_SLUG}"
+
 # Read todo.md
-cat /workspace/learning_notes/todo.md 2>/dev/null || echo "NOT FOUND"
+cat ${PROJECT_DIR}/todo.md 2>/dev/null || echo "NOT FOUND"
 ```
 
 **Status Check:**
@@ -28,14 +41,14 @@ cat /workspace/learning_notes/todo.md 2>/dev/null || echo "NOT FOUND"
 **Update todo.md Status:**
 ```bash
 # Mark current phase as in progress
-sed -i '' 's/⬜ 未开始/🔲 进行中/g' /workspace/learning_notes/todo.md
+sed -i '' 's/⬜ 未开始/🔲 进行中/g' ${PROJECT_DIR}/todo.md
 ```
 
 **After Completion:**
 ```bash
 # Mark current phase as complete, advance to next phase
-sed -i '' 's/🔲 进行中/✅ 已完成/g' /workspace/learning_notes/todo.md
-sed -i '' 's/当前阶段：阶段 [0-9]/当前阶段：阶段 6/g' /workspace/learning_notes/todo.md
+sed -i '' 's/🔲 进行中/✅ 已完成/g' ${PROJECT_DIR}/todo.md
+sed -i '' 's/当前阶段：阶段 [0-9]/当前阶段：阶段 6/g' ${PROJECT_DIR}/todo.md
 ```
 
 ---
@@ -46,9 +59,9 @@ You will read all completed chapter files and the outline, then assemble them in
 
 ## Inputs
 
-1. **Chapter files**: `/workspace/learning_notes/chapters/` — all completed chapter markdown files
-2. **Outline**: `/workspace/learning_notes/03_outline.md` — the chapter structure (if exists)
-3. **Intent file**: `/workspace/learning_notes/00_intent.md` — user's learning goals and preferences
+1. **Chapter files**: `/workspace/${PROJECT_SLUG}/chapters/` — all completed chapter markdown files
+2. **Outline**: `/workspace/${PROJECT_SLUG}/03_outline.md` — the chapter structure (if exists)
+3. **Intent file**: `/workspace/${PROJECT_SLUG}/00_intent.md` — user's learning goals and preferences
 
 If no chapter files exist, inform the user that they need to complete the writing phase first.
 
@@ -56,7 +69,7 @@ If no chapter files exist, inform the user that they need to complete the writin
 
 ### Step 1: Discover and Read Chapters
 
-1. List all files in `/workspace/learning_notes/chapters/` directory
+1. List all files in `/workspace/${PROJECT_SLUG}/chapters/` directory
 2. Read each chapter file in order (sorted by chapter number)
 3. Read the outline file (if exists) to understand the intended structure
 4. Read the intent file to understand user preferences
@@ -147,14 +160,14 @@ Add the following navigation elements:
 
 Save the final assembled document to:
 ```
-/workspace/learning_notes/output/final_note.md
+/workspace/${PROJECT_SLUG}/output/final_note.md
 ```
 
 **Update todo.md status:**
 ```bash
 # Mark Phase 5 as complete, advance to Phase 6
-sed -i '' 's/🔲 进行中/✅ 已完成/g' /workspace/learning_notes/todo.md
-sed -i '' 's/当前阶段：阶段 [0-9]/当前阶段：阶段 6/g' /workspace/learning_notes/todo.md
+sed -i '' 's/🔲 进行中/✅ 已完成/g' ${PROJECT_DIR}/todo.md
+sed -i '' 's/当前阶段：阶段 [0-9]/当前阶段：阶段 6/g' ${PROJECT_DIR}/todo.md
 ```
 
 ### Step 8: Generate Assembly Report
@@ -170,7 +183,7 @@ Present a summary to the user:
 - 组装方式：{A/B/C}
 
 ### 输出文件
-- 完整笔记：`/workspace/learning_notes/output/final_note.md`
+- 完整笔记：`/workspace/${PROJECT_SLUG}/output/final_note.md`
 
 ### 目录结构
 {展示生成的目录}

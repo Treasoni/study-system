@@ -49,11 +49,11 @@ output/final_note.md
 - 02_deep_research.md 已就绪
 
 **前置依赖**：
-- `/workspace/learning_notes/00_intent.md` ✅
-- `/workspace/learning_notes/02_deep_research.md` ✅
+- `/workspace/${PROJECT_SLUG}/00_intent.md` ✅
+- `/workspace/${PROJECT_SLUG}/02_deep_research.md` ✅
 
 **输出文件**：
-- `/workspace/learning_notes/03_outline.md`
+- `/workspace/${PROJECT_SLUG}/03_outline.md`
 
 **调用示例**：
 ```markdown
@@ -75,12 +75,12 @@ output/final_note.md
 - 大纲已确认完成
 
 **前置依赖**：
-- `/workspace/learning_notes/00_intent.md` ✅
-- `/workspace/learning_notes/02_deep_research.md` ✅
-- `/workspace/learning_notes/03_outline.md` ✅
+- `/workspace/${PROJECT_SLUG}/00_intent.md` ✅
+- `/workspace/${PROJECT_SLUG}/02_deep_research.md` ✅
+- `/workspace/${PROJECT_SLUG}/03_outline.md` ✅
 
 **输出文件**：
-- `/workspace/learning_notes/chapters/{N}_{章节名}.md`
+- `/workspace/${PROJECT_SLUG}/chapters/{N}_{章节名}.md`
 
 **调用示例**：
 ```markdown
@@ -103,12 +103,12 @@ output/final_note.md
 - 用户说"笔记写得差不多了，帮我整理成最终版本"
 
 **前置依赖**：
-- `/workspace/learning_notes/chapters/` 目录下有章节文件 ✅
-- `/workspace/learning_notes/00_intent.md` ✅
-- `/workspace/learning_notes/03_outline.md` (可选)
+- `/workspace/${PROJECT_SLUG}/chapters/` 目录下有章节文件 ✅
+- `/workspace/${PROJECT_SLUG}/00_intent.md` ✅
+- `/workspace/${PROJECT_SLUG}/03_outline.md` (可选)
 
 **输出文件**：
-- `/workspace/learning_notes/output/final_note.md`
+- `/workspace/${PROJECT_SLUG}/output/final_note.md`
 
 **调用示例**：
 ```markdown
@@ -247,10 +247,10 @@ output/final_note.md
 - 笔记组装完成后
 
 **前置依赖**：
-- `/workspace/learning_notes/output/final_note.md` ✅
+- `/workspace/${PROJECT_SLUG}/output/final_note.md` ✅
 
 **输出文件**：
-- `/workspace/learning_notes/output/review_report.md`
+- `/workspace/${PROJECT_SLUG}/output/review_report.md`
 
 **调用示例**：
 ```markdown

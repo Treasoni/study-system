@@ -121,13 +121,26 @@ note-beautifier (协调层)
 
 ## 工作流程
 
-### Step 0: 读取 todo.md 状态（必须执行）
+### Step 0: 读取项目信息和 todo.md 状态（必须执行）
 
-**启动时必须检查 todo.md，确认当前阶段：**
+**启动时必须确定项目文件夹并检查 todo.md：**
 
 ```bash
+# 从意图文件读取项目标识
+PROJECT_SLUG=$(grep "项目标识" /workspace/*/00_intent.md 2>/dev/null | head -1 | sed 's/.*：//')
+
+# 如果有多个项目，提示用户选择
+if [ -z "$PROJECT_SLUG" ]; then
+  echo "找到以下项目："
+  ls -d /workspace/*/ 2>/dev/null | xargs -I {} basename {}
+  echo "请指定项目名称"
+  exit 1
+fi
+
+PROJECT_DIR="/workspace/${PROJECT_SLUG}"
+
 # 读取 todo.md
-cat /workspace/learning_notes/todo.md 2>/dev/null || echo "不存在"
+cat ${PROJECT_DIR}/todo.md 2>/dev/null || echo "不存在"
 ```
 
 **状态检查：**
@@ -139,13 +152,13 @@ cat /workspace/learning_notes/todo.md 2>/dev/null || echo "不存在"
 **更新 todo.md 状态：**
 ```bash
 # 将当前阶段标记为进行中
-sed -i '' 's/⬜ 未开始/🔲 进行中/g' /workspace/learning_notes/todo.md
+sed -i '' 's/⬜ 未开始/🔲 进行中/g' ${PROJECT_DIR}/todo.md
 ```
 
 **完成后更新状态：**
 ```bash
 # 将当前阶段标记为完成
-sed -i '' 's/🔲 进行中/✅ 已完成/g' /workspace/learning_notes/todo.md
+sed -i '' 's/🔲 进行中/✅ 已完成/g' ${PROJECT_DIR}/todo.md
 ```
 
 ---
@@ -323,7 +336,7 @@ sed -i '' 's/🔲 进行中/✅ 已完成/g' /workspace/learning_notes/todo.md
 **Update todo.md status after beautification:**
 ```bash
 # Mark Phase 6 as complete (all phases done!)
-sed -i '' 's/🔲 进行中/✅ 已完成/g' /workspace/learning_notes/todo.md
+sed -i '' 's/🔲 进行中/✅ 已完成/g' ${PROJECT_DIR}/todo.md
 ```
 
 ## 美化模板库

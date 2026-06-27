@@ -80,7 +80,7 @@ description: 使用多策略进行高效资料收集：Fork Subagent 隔离收�
 
 ### 策略 4: 本地缓存复用
 
-**缓存目录**: `/workspace/learning_notes/`
+**缓存目录**: `/workspace/${PROJECT_SLUG}/`（项目专属文件夹）
 
 **文件命名**: `02_deep_research.md`（固定命名，供下游组件读取）
 
@@ -112,13 +112,26 @@ description: 使用多策略进行高效资料收集：Fork Subagent 隔离收�
 
 ## 工作流程
 
-### Step 0: 读取 todo.md 状态（必须执行）
+### Step 0: 读取项目信息和 todo.md 状态（必须执行）
 
-**启动时必须检查 todo.md，确认当前阶段：**
+**启动时必须确定项目文件夹并检查 todo.md：**
 
 ```bash
+# 方式 1: 从意图文件读取项目标识
+PROJECT_SLUG=$(grep "项目标识" /workspace/*/00_intent.md 2>/dev/null | head -1 | sed 's/.*：//')
+
+# 方式 2: 如果有多个项目，提示用户选择
+if [ -z "$PROJECT_SLUG" ]; then
+  echo "找到以下项目："
+  ls -d /workspace/*/ 2>/dev/null | xargs -I {} basename {}
+  echo "请指定项目名称"
+  exit 1
+fi
+
+PROJECT_DIR="/workspace/${PROJECT_SLUG}"
+
 # 读取 todo.md
-cat /workspace/learning_notes/todo.md 2>/dev/null || echo "不存在"
+cat ${PROJECT_DIR}/todo.md 2>/dev/null || echo "不存在"
 ```
 
 **状态检查：**
@@ -130,14 +143,14 @@ cat /workspace/learning_notes/todo.md 2>/dev/null || echo "不存在"
 **更新 todo.md 状态：**
 ```bash
 # 将当前阶段标记为进行中
-sed -i '' 's/⬜ 未开始/🔲 进行中/g' /workspace/learning_notes/todo.md
+sed -i '' 's/⬜ 未开始/🔲 进行中/g' ${PROJECT_DIR}/todo.md
 ```
 
 **完成后更新状态：**
 ```bash
 # 将当前阶段标记为完成，推进到下一阶段
-sed -i '' 's/🔲 进行中/✅ 已完成/g' /workspace/learning_notes/todo.md
-sed -i '' 's/当前阶段：阶段 [0-9]/当前阶段：阶段 N+1/g' /workspace/learning_notes/todo.md
+sed -i '' 's/🔲 进行中/✅ 已完成/g' ${PROJECT_DIR}/todo.md
+sed -i '' 's/当前阶段：阶段 [0-9]/当前阶段：阶段 N+1/g' ${PROJECT_DIR}/todo.md
 ```
 
 ---
@@ -202,7 +215,7 @@ Subagent 4: 搜索 "{关键词4} 常见问题 问题排查"
 
 将结果写入本地文件:
 ```
-/workspace/learning_notes/02_deep_research.md
+/workspace/${PROJECT_SLUG}/02_deep_research.md
 ```
 
 **注意**: 使用固定文件名 `02_deep_research.md`，方便下游组件（outline-generator、chapter-writer）直接读取。
@@ -210,9 +223,9 @@ Subagent 4: 搜索 "{关键词4} 常见问题 问题排查"
 **更新 todo.md 状态：**
 ```bash
 # 将当前阶段标记为完成，推进到下一阶段
-sed -i '' 's/🔲 进行中/✅ 已完成/g' /workspace/learning_notes/todo.md
+sed -i '' 's/🔲 进行中/✅ 已完成/g' ${PROJECT_DIR}/todo.md
 # 根据实际执行阶段更新当前阶段
-sed -i '' 's/当前阶段：阶段 [0-9]/当前阶段：阶段 3/g' /workspace/learning_notes/todo.md
+sed -i '' 's/当前阶段：阶段 [0-9]/当前阶段：阶段 3/g' ${PROJECT_DIR}/todo.md
 ```
 
 ## 输出示例
@@ -243,7 +256,7 @@ sed -i '' 's/当前阶段：阶段 [0-9]/当前阶段：阶段 3/g' /workspace/l
 [总结关键发现、最佳实践、常见问题]
 
 ---
-✅ 资料已缓存到: /workspace/learning_notes/02_deep_research.md
+✅ 资料已缓存到: /workspace/${PROJECT_SLUG}/02_deep_research.md
 ```
 
 ## 高级用法

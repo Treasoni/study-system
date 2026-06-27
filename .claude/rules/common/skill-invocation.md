@@ -46,6 +46,7 @@ Plugin 中的 skills 会显示为 `/plugin-name:skill-name` 的形式，而不�
 
 | 技能 | 触发场景 | 关键触发词 |
 |------|----------|-----------|
+| `workflow-orchestrator` | 工作流编排器，选择工作流模板并生成 todo.md | 工作流、流程、开始学习、新建项目、workflow、orchestrator |
 | `note-assembler` | 将章节组装成完整笔记（由 agent 调用） | 组装、合并章节、收尾、拼装、assemble |
 | `note-beautifier` | Obsidian 笔记智能美化专家 | 美化、Obsidian、优化格式、笔记美化、beautify |
 
