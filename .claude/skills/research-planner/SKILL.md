@@ -24,27 +24,6 @@ description: 学习笔记需求澄清与引导。分析用户学习需求，引�
 
 ## 工作流程
 
-### Step 0: 读取 todo.md 状态（必须执行）
-
-**启动时必须确定项目文件夹并检查 todo.md：**
-
-```bash
-# 从用户输入生成项目 slug
-TOPIC="用户输入的主题"
-PROJECT_SLUG=$(echo "$TOPIC" | tr '[:upper:]' '[:lower:]' | tr ' ' '-')
-PROJECT_DIR="/workspace/${PROJECT_SLUG}"
-
-# 读取 todo.md
-cat ${PROJECT_DIR}/todo.md 2>/dev/null || echo "不存在"
-```
-
-**状态检查：**
-- 如果 todo.md 不存在：继续执行 Step 1
-- 如果 todo.md 存在但阶段 0 为 ⬜ 或 🔲：允许重新执行
-- 如果 todo.md 存在且阶段 0 为 ✅：提示用户"意图阶段已完成，是否要重新开始？"
-
----
-
 ### Step 1: 分析用户需求
 
 **收集关键信息**:
