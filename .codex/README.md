@@ -15,7 +15,7 @@
 
 ## Isolation
 
-Codex 运行时应写本项目 `.codex/` 或学习项目工作区，不写 `.claude/`，也不写全局 `~/.codex/`。如果需要同时维护 Claude Code 与 Codex 两套配置，先修改本项目 `.codex/`，再由用户确认是否同步回 `.claude/`。
+Codex 运行时应写本项目 `.codex/` 或学习项目工作区，不写 `.claude/`，也不写全局 `~/.codex/`。修改 `.codex/skills`、`.codex/agents`、`.codex/rules` 或 `.codex/scripts` 后，按项目规则运行同步脚本维护 Claude Code 镜像。
 
 ## Project-Local Hooks
 
@@ -23,7 +23,7 @@ Codex 运行时应写本项目 `.codex/` 或学习项目工作区，不写 `.cla
 
 - `Stop` -> `.codex/hooks/post-conversation.sh`
 
-默认 Stop hook 会在检测到项目改动时执行 `git add -A` 并自动提交，不自动推送。需要临时禁用自动提交时，设置 `CODEX_AUTO_GIT=0`；需要推送时再额外设置 `CODEX_AUTO_GIT_PUSH=1`。
+默认 Stop hook 只报告检测到的项目改动，不提交也不推送。设置 `CODEX_AUTO_GIT=1` 才会执行 `git add -A` 和自动提交；需要推送时再额外设置 `CODEX_AUTO_GIT_PUSH=1`。
 
 ## Note Workflow Extensions
 

@@ -2,10 +2,10 @@
 
 本项目同时保留 Claude Code 与 Codex 两套配置。Codex 工作时必须遵守下面的隔离规则：
 
-1. 不要修改 `.claude/` 下的任何文件，除非用户明确要求维护 Claude Code 配置。
+1. 默认不要搜索或读取 `.claude/` 下的任何文件，除非用户明确要求维护 Claude Code 配置，或执行本项目规定的同步操作。
 2. Codex 专用配置、规则、技能、hooks 和脚本只放在本项目 `.codex/` 下，不写入 `~/.codex/`。
 3. 项目级长期规则以本文件为入口；更细规则见 `.codex/rules/`。
-4. 需要使用技能时，优先读取 `.codex/skills/{skill-name}/SKILL.md`，完整理解后再执行。
+4. 需要使用技能时，优先读取 `.codex/skills/{skill-name}/SKILL.md` 作为入口，完整理解后再执行；只在任务需要时继续读取其引用的模板、示例和资料，避免预加载无关内容。
 5. 需要模拟原 Claude agent 时，读取 `.codex/agents/{agent-name}.md`，按其中角色、输入、输出和检查点执行。
 6. 修改 `.codex/skills`、`.codex/agents`、`.codex/rules` 或 `.codex/scripts` 后，运行 `.codex/scripts/sync-codex-to-claude.sh`，保持 Claude Code 配置同步。
 

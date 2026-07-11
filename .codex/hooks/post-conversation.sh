@@ -1,6 +1,6 @@
 #!/bin/bash
 # Project-local Codex Stop hook for Study System.
-# Default behavior is git add/commit. Set CODEX_AUTO_GIT=0 to disable.
+# Default behavior only reports project changes. Set CODEX_AUTO_GIT=1 to add and commit.
 
 set -euo pipefail
 
@@ -28,7 +28,7 @@ log "Study System: project changes detected:"
 printf '%s\n' "$changed_files"
 printf '%s\n' "$changed_files" >> "$LOG_FILE" 2>/dev/null || true
 
-if [ "${CODEX_AUTO_GIT:-1}" != "1" ]; then
+if [ "${CODEX_AUTO_GIT:-0}" != "1" ]; then
   log "Auto commit disabled because CODEX_AUTO_GIT=${CODEX_AUTO_GIT:-0}."
   exit 0
 fi
