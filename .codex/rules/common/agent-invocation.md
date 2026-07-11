@@ -4,9 +4,9 @@
 
 | Agent | 用途 | 调用方式 |
 |-------|------|----------|
-| `outline-generator` | 生成学习笔记大纲 | 读取 `.claude/agents/outline-generator.md` 后执行，或派发 subagent |
-| `chapter-writer` | 逐章写作学习笔记 | 读取 `.claude/agents/chapter-writer.md` 后执行，或派发 subagent |
-| `note-assembler` | 组装章节成完整笔记 | 读取 `.claude/agents/note-assembler.md` 后执行，或派发 subagent |
+| `outline-generator` | 生成学习笔记大纲 | 读取 `.codex/agents/outline-generator.md` 后执行，或派发 subagent |
+| `chapter-writer` | 逐章写作学习笔记 | 读取 `.codex/agents/chapter-writer.md` 后执行，或派发 subagent |
+| `note-assembler` | 组装章节成完整笔记 | 读取 `.codex/agents/note-assembler.md` 后执行，或派发 subagent |
 
 ## 调用流程
 
@@ -172,7 +172,7 @@ output/final_note.md
 ### 更新时机
 
 **必须更新本文件的情况**：
-1. 添加新的 agent 到 `.claude/agents/` 目录
+1. 添加新的 agent 到 `.codex/agents/` 目录
 2. 删除或重命名现有 agent
 3. 修改 agent 的触发条件或前置依赖
 4. 调整 agent 的调用顺序或流程
@@ -183,7 +183,7 @@ output/final_note.md
 
 1. **读取 agent 定义文件**
    ```bash
-   cat .claude/agents/{agent-name}.md
+   cat .codex/agents/{agent-name}.md
    ```
 
 2. **提取关键信息**
@@ -220,8 +220,8 @@ output/final_note.md
 
 ### 文件位置
 
-- Agent 定义：`.claude/agents/*.md`
-- 调用规范：`.claude/rules/common/agent-invocation.md`
+- Agent 定义：`.codex/agents/*.md`
+- 调用规范：`.codex/rules/common/agent-invocation.md`
 
 ### 示例：添加新 agent
 

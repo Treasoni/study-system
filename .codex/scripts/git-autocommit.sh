@@ -74,5 +74,5 @@ fi
 # 构建 commit message
 msg="$type: $desc"
 
-# 提交。Claude Code 侧不添加 Claude Code co-author，避免污染提交来源。
+# 提交。Codex 侧不添加 Claude Code co-author，避免污染提交来源。
 git commit -m "$msg"

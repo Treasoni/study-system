@@ -1,0 +1,15 @@
+{
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "./hooks/post-conversation.sh",
+            "statusMessage": "整理项目状态..."
+          }
+        ]
+      }
+    ]
+  }
+}

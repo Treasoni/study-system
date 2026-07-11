@@ -318,7 +318,7 @@ sed -i '' 's/\[P6\] 🔲 进行中/[P6] ✅ 已完成/' ${PROJECT_DIR}/todo.md
 
 ## 美化模板库
 
-> **注意**: 本项目直接按 `.claude/rules/obsidian/note-system.md` 执行 Obsidian Markdown 规则，不依赖全局 Obsidian 插件技能。
+> **注意**: 本项目直接按 `.codex/rules/obsidian/note-system.md` 执行 Obsidian Markdown 规则，不依赖全局 Obsidian 插件技能。
 
 ### 美化方案模板
 
@@ -360,7 +360,7 @@ sed -i '' 's/\[P6\] 🔲 进行中/[P6] ✅ 已完成/' ${PROJECT_DIR}/todo.md
 
 ## 美化规则
 
-> **重要**: 以下规则由本项目直接执行，详见 `.claude/rules/obsidian/note-system.md`。
+> **重要**: 以下规则由本项目直接执行，详见 `.codex/rules/obsidian/note-system.md`。
 
 ### 1. Callout 使用规范
 

@@ -16,7 +16,7 @@
 
 - `note-beautifier`：处理 Obsidian Markdown、frontmatter、标签、Callout、双链和发布位置。
 - `moc-organizer`：生成或更新 MOC 目录笔记。
-- `.claude/rules/obsidian/note-system.md`：Obsidian 输出规范。
+- `.codex/rules/obsidian/note-system.md`：Obsidian 输出规范。
 
 ## 技能列表
 
@@ -73,7 +73,7 @@
 
 | 技能 | 触发场景 | 关键触发词 |
 |------|----------|-----------|
-| `skill-creator` | 创建新的 Claude Code 技能 | 创建 skill、新技能、写一个 skill |
+| `skill-creator` | 创建新的 Codex 技能 | 创建 skill、新技能、写一个 skill |
 
 ### 1. 分析意图
 

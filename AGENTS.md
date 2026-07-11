@@ -1,0 +1,63 @@
+# Study System - Codex Project Guidance
+
+本项目同时保留 Claude Code 与 Codex 两套配置。Codex 工作时必须遵守下面的隔离规则：
+
+1. 不要修改 `.claude/` 下的任何文件，除非用户明确要求维护 Claude Code 配置。
+2. Codex 专用配置、规则、技能、hooks 和脚本只放在本项目 `.codex/` 下，不写入 `~/.codex/`。
+3. 项目级长期规则以本文件为入口；更细规则见 `.codex/rules/`。
+4. 需要使用技能时，优先读取 `.codex/skills/{skill-name}/SKILL.md`，完整理解后再执行。
+5. 需要模拟原 Claude agent 时，读取 `.codex/agents/{agent-name}.md`，按其中角色、输入、输出和检查点执行。
+6. 修改 `.codex/skills`、`.codex/agents`、`.codex/rules` 或 `.codex/scripts` 后，运行 `.codex/scripts/sync-codex-to-claude.sh`，保持 Claude Code 配置同步。
+
+## Core Workflow
+
+学习笔记生产流程保持与 Claude Code 版一致：
+
+```text
+research-planner -> workflow-orchestrator -> research-collector
+-> outline-generator -> chapter-writer -> note-assembler
+-> note-beautifier -> moc-organizer
+```
+
+每个阶段启动前必须读取目标项目目录下的 `todo.md`，确认当前阶段和前置状态。不能跳过阶段，不能绕过用户确认检查点。
+
+项目工作区默认使用 `WORKSPACE_PATH=./workspace`。不要写死 `/workspace`。最终笔记位置由用户指定；未指定时只写入项目工作区的 `output/`。
+
+## Skill Routing
+
+当用户请求匹配下面场景时，使用对应 Codex skill：
+
+| Skill | Trigger |
+| --- | --- |
+| `research-planner` | 想学、帮我整理、研究一下、不知道从哪开始、explore topic |
+| `workflow-orchestrator` | 工作流、开始学习、新建学习项目、生成 todo.md |
+| `research-collector` | 收集资料、研究资料、搜集信息、资料整理、research |
+| `note-beautifier` | 美化笔记、Obsidian、优化格式、beautify |
+| `note-updater` | 更新旧笔记、笔记过时、refresh note、同步旧 Obsidian 笔记 |
+| `moc-organizer` | 生成 MOC、整理目录、加入索引、Map of Content |
+| `tool-discovery` | 可用工具、工具列表、收集工具 |
+| `digest` | 记录学习、总结经验、消化、digest |
+
+如果用户要求创建或优化 skill，使用 Codex 自带的 `skill-creator`；不要把新 skill 写回 `.claude/skills`，除非用户明确要求同步 Claude Code。
+
+## Rules
+
+执行任务时按需读取：
+
+- `.codex/rules/common/skill-invocation.md`
+- `.codex/rules/common/agent-invocation.md`
+- `.codex/rules/common/git-workflow.md`
+- `.codex/rules/common/env.md`
+- `.codex/rules/common/token-optimization.md`
+- `.codex/rules/common/sync-workflow.md`
+- `.codex/rules/obsidian/note-system.md`
+- `.codex/rules/research-tools.md`
+
+项目本地 hooks 使用 `.codex/hooks.json` 注册，脚本放在 `.codex/hooks/`。不要把本项目 hooks 写到全局 `~/.codex/config.toml`；如果 Codex 提示信任 hook，仅信任本项目路径。
+
+## Project Safety
+
+- 不提交真实 `.env`、密钥、Token 或本地个人配置。
+- 不硬编码用户机器绝对路径到项目产物中。
+- 编辑前先检查 `git status --short`，不要覆盖用户未提交改动。
+- Git 提交消息遵守 `.codex/rules/common/git-workflow.md`。

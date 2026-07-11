@@ -102,8 +102,8 @@ TOPIC="${2}"                          # 主题
 PROJECT_SLUG=$(echo "$TOPIC" | tr '[:upper:]' '[:lower:]' | tr ' ' '-')
 
 # 2. 定位模板文件（以 workflow 名称匹配）
-FLOW_DOC=".claude/skills/workflow-orchestrator/templates/${WORKFLOW}.md"
-TODO_TEMPLATE=".claude/skills/workflow-orchestrator/templates/${WORKFLOW}-todo.md"
+FLOW_DOC=".codex/skills/workflow-orchestrator/templates/${WORKFLOW}.md"
+TODO_TEMPLATE=".codex/skills/workflow-orchestrator/templates/${WORKFLOW}-todo.md"
 
 # 3. 验证模板存在
 if [ ! -f "$TODO_TEMPLATE" ]; then
@@ -161,13 +161,13 @@ orchestrator 从调用方 planner 接收结构化参数：
 
 ```bash
 # 根据 workflow 参数定位模板
-FLOW_DOC=".claude/skills/workflow-orchestrator/templates/${WORKFLOW}.md"
-TODO_TEMPLATE=".claude/skills/workflow-orchestrator/templates/${WORKFLOW}-todo.md"
+FLOW_DOC=".codex/skills/workflow-orchestrator/templates/${WORKFLOW}.md"
+TODO_TEMPLATE=".codex/skills/workflow-orchestrator/templates/${WORKFLOW}-todo.md"
 
 # 验证存在
 if [ ! -f "$TODO_TEMPLATE" ]; then
     echo "错误: 工作流 '${WORKFLOW}' 未配置"
-    ls -1 .claude/skills/workflow-orchestrator/templates/*-todo.md | sed 's/.*\///;s/-todo.md//'
+    ls -1 .codex/skills/workflow-orchestrator/templates/*-todo.md | sed 's/.*\///;s/-todo.md//'
     echo "以上为可用工作流"
     exit 1
 fi
@@ -315,15 +315,15 @@ orchestrator:
 1. **创建模板文件对**:
    ```bash
    WORKFLOW="project-flow"
-   touch .claude/skills/workflow-orchestrator/templates/${WORKFLOW}.md        # 说明书
-   touch .claude/skills/workflow-orchestrator/templates/${WORKFLOW}-todo.md   # todo 模板
+   touch .codex/skills/workflow-orchestrator/templates/${WORKFLOW}.md        # 说明书
+   touch .codex/skills/workflow-orchestrator/templates/${WORKFLOW}-todo.md   # todo 模板
    ```
 
 2. **写说明书**: 定义阶段、检查项、技能依赖（格式见"模板格式规范"）
 
 3. **写 todo 模板**: 带 `{topic}` `{project_slug}` `{date}` `{current_phase}` 占位符
 
-4. **创建对应 planner**: 在 `.claude/skills/` 下新建 planner skill，负责该领域的意图澄清，完成后调用 orchestrator 并传入 `workflow="project-flow"`
+4. **创建对应 planner**: 在 `.codex/skills/` 下新建 planner skill，负责该领域的意图澄清，完成后调用 orchestrator 并传入 `workflow="project-flow"`
 
 5. **更新 CLAUDE.md**: 在"可用工作流"表格中添加新行
 

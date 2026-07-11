@@ -189,7 +189,7 @@ ${WORKSPACE_PATH:-./workspace}/${PROJECT_SLUG}/00_intent.md
 
 ## 与其他技能的关系
 
-本技能负责意图澄清，完成后调用 workflow-orchestrator 生成 todo.md。完整编排流程见 `.claude/skills/workflow-orchestrator/SKILL.md`，阶段执行流见 `templates/learning-note-flow.md`。
+本技能负责意图澄清，完成后调用 workflow-orchestrator 生成 todo.md。完整编排流程见 `.codex/skills/workflow-orchestrator/SKILL.md`，阶段执行流见 `templates/learning-note-flow.md`。
 
 核心链路：
 ```
