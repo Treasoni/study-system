@@ -5,8 +5,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "./hooks/post-conversation.sh",
-            "statusMessage": "整理项目状态..."
+            "command": "bash -lc 'if [ -x .codex/hooks/post-conversation.sh ]; then exec .codex/hooks/post-conversation.sh; fi; if [ -x hooks/post-conversation.sh ]; then exec hooks/post-conversation.sh; fi; echo \"Study System: post-conversation hook not found\"; exit 0'",
+            "statusMessage": "整理项目状态并自动提交..."
           }
         ]
       }

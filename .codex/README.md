@@ -23,14 +23,16 @@ Codex 运行时应写本项目 `.codex/` 或学习项目工作区，不写 `.cla
 
 - `Stop` -> `.codex/hooks/post-conversation.sh`
 
-默认 Stop hook 只输出仓库状态，不自动提交、不推送。需要自动提交时，手动设置 `CODEX_AUTO_GIT=1`；需要推送时再额外设置 `CODEX_AUTO_GIT_PUSH=1`。
+默认 Stop hook 会在检测到项目改动时执行 `git add -A` 并自动提交，不自动推送。需要临时禁用自动提交时，设置 `CODEX_AUTO_GIT=0`；需要推送时再额外设置 `CODEX_AUTO_GIT_PUSH=1`。
 
 ## Note Workflow Extensions
 
 本项目面向“写学习笔记”而不是泛用文档生成：
 
 - 新笔记：按 `research-planner -> ... -> note-beautifier -> moc-organizer` 执行。
+- 旧笔记导入：使用 `legacy-note-importer` 先盘点和生成迁移计划，再按批次规范化。
 - 旧笔记更新：使用 `note-updater`，只局部更新过时段落。
+- 多篇旧笔记批量更新：使用 `batch-note-updater` 先生成更新清单和批量计划，再逐篇调用 `note-updater`。
 - Obsidian 美化：只输出 Obsidian Markdown，不默认导出 PDF/Word/PPT。
 - 输出位置：每次发布前由用户指定 vault 路径和 vault 内目录。
 - MOC：每次发布或更新笔记后同步一次，不复制正文。

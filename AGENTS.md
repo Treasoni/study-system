@@ -19,6 +19,20 @@ research-planner -> workflow-orchestrator -> research-collector
 -> note-beautifier -> moc-organizer
 ```
 
+已有旧笔记批量接入使用独立流程：
+
+```text
+legacy-note-importer -> note-beautifier
+-> note-updater（可选） -> moc-organizer
+```
+
+已有多篇旧笔记批量更新使用独立流程：
+
+```text
+batch-note-updater -> note-updater
+-> moc-organizer（可选）
+```
+
 每个阶段启动前必须读取目标项目目录下的 `todo.md`，确认当前阶段和前置状态。不能跳过阶段，不能绕过用户确认检查点。
 
 项目工作区默认使用 `WORKSPACE_PATH=./workspace`。不要写死 `/workspace`。最终笔记位置由用户指定；未指定时只写入项目工作区的 `output/`。
@@ -32,6 +46,8 @@ research-planner -> workflow-orchestrator -> research-collector
 | `research-planner` | 想学、帮我整理、研究一下、不知道从哪开始、explore topic |
 | `workflow-orchestrator` | 工作流、开始学习、新建学习项目、生成 todo.md |
 | `research-collector` | 收集资料、研究资料、搜集信息、资料整理、research |
+| `legacy-note-importer` | 旧笔记导入、已有笔记、一堆笔记、批量整理、迁移到这个项目、按项目规范 |
+| `batch-note-updater` | 批量更新旧笔记、多篇笔记过时、更新一个目录的笔记、refresh multiple notes |
 | `note-beautifier` | 美化笔记、Obsidian、优化格式、beautify |
 | `note-updater` | 更新旧笔记、笔记过时、refresh note、同步旧 Obsidian 笔记 |
 | `moc-organizer` | 生成 MOC、整理目录、加入索引、Map of Content |

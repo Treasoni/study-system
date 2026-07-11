@@ -52,6 +52,8 @@ workflow-orchestrator (本技能)
 | 工作流 | 说明书 | todo 模板 | 用途 | 阶段数 |
 |-------|--------|----------|------|--------|
 | learning-note-flow | learning-note-flow.md | learning-note-todo.md | 完整学习笔记生产 + Obsidian 发布 + MOC 同步 | 8 (阶段 0-7) |
+| legacy-note-import-flow | legacy-note-import-flow.md | legacy-note-import-todo.md | 已有旧笔记批量导入、规范化、可选更新与 MOC 同步 | 6 (阶段 0-5) |
+| batch-note-update-flow | batch-note-update-flow.md | batch-note-update-todo.md | 多篇既有笔记批量更新、逐篇局部 patch 与 MOC 同步 | 6 (阶段 0-5) |
 
 **说明书格式要求**:
 - 必须包含: 工作流名称、描述、各阶段定义
@@ -103,7 +105,12 @@ PROJECT_SLUG=$(echo "$TOPIC" | tr '[:upper:]' '[:lower:]' | tr ' ' '-')
 
 # 2. 定位模板文件（以 workflow 名称匹配）
 FLOW_DOC=".claude/skills/workflow-orchestrator/templates/${WORKFLOW}.md"
-TODO_TEMPLATE=".claude/skills/workflow-orchestrator/templates/${WORKFLOW}-todo.md"
+case "$WORKFLOW" in
+  learning-note-flow) TODO_TEMPLATE=".claude/skills/workflow-orchestrator/templates/learning-note-todo.md" ;;
+  legacy-note-import-flow) TODO_TEMPLATE=".claude/skills/workflow-orchestrator/templates/legacy-note-import-todo.md" ;;
+  batch-note-update-flow) TODO_TEMPLATE=".claude/skills/workflow-orchestrator/templates/batch-note-update-todo.md" ;;
+  *) TODO_TEMPLATE=".claude/skills/workflow-orchestrator/templates/${WORKFLOW}-todo.md" ;;
+esac
 
 # 3. 验证模板存在
 if [ ! -f "$TODO_TEMPLATE" ]; then
@@ -162,7 +169,12 @@ orchestrator 从调用方 planner 接收结构化参数：
 ```bash
 # 根据 workflow 参数定位模板
 FLOW_DOC=".claude/skills/workflow-orchestrator/templates/${WORKFLOW}.md"
-TODO_TEMPLATE=".claude/skills/workflow-orchestrator/templates/${WORKFLOW}-todo.md"
+case "$WORKFLOW" in
+  learning-note-flow) TODO_TEMPLATE=".claude/skills/workflow-orchestrator/templates/learning-note-todo.md" ;;
+  legacy-note-import-flow) TODO_TEMPLATE=".claude/skills/workflow-orchestrator/templates/legacy-note-import-todo.md" ;;
+  batch-note-update-flow) TODO_TEMPLATE=".claude/skills/workflow-orchestrator/templates/batch-note-update-todo.md" ;;
+  *) TODO_TEMPLATE=".claude/skills/workflow-orchestrator/templates/${WORKFLOW}-todo.md" ;;
+esac
 
 # 验证存在
 if [ ! -f "$TODO_TEMPLATE" ]; then
@@ -258,6 +270,8 @@ ${WORKSPACE_PATH:-./workspace}/${PROJECT_SLUG}/
 各 planner（领域特异性）
     │
     │  research-planner ──→ workflow="learning-note-flow"
+    │  legacy-note-importer ──→ workflow="legacy-note-import-flow"
+    │  batch-note-updater ──→ workflow="batch-note-update-flow"
     │  project-planner  ──→ workflow="project-flow" (未来)
     │
     ▼
@@ -271,6 +285,8 @@ workflow-orchestrator (本技能)
          ▼
 按 todo.md 各阶段执行:
 research-collector → outline-generator → chapter-writer → note-assembler → note-beautifier
+legacy-note-importer → note-beautifier → note-updater（可选） → moc-organizer
+batch-note-updater → note-updater → moc-organizer（可选）
 ```
 
 ## 调用示例
@@ -304,8 +320,12 @@ orchestrator:
   templates/
     learning-note-flow.md       ← 说明书
     learning-note-todo.md       ← todo 模板
+    legacy-note-import-flow.md  ← 说明书
+    legacy-note-import-todo.md  ← todo 模板
+    batch-note-update-flow.md   ← 说明书
+    batch-note-update-todo.md   ← todo 模板
 
-每个工作流一对文件。规划添加新工作流时，同时创建这俩文件 + 对应的 planner。
+每个工作流一对文件。规划添加新工作流时，同时创建这俩文件 + 对应的 planner 或入口 skill。
 ```
 
 ## 扩展指南
@@ -323,9 +343,9 @@ orchestrator:
 
 3. **写 todo 模板**: 带 `{topic}` `{project_slug}` `{date}` `{current_phase}` 占位符
 
-4. **创建对应 planner**: 在 `.claude/skills/` 下新建 planner skill，负责该领域的意图澄清，完成后调用 orchestrator 并传入 `workflow="project-flow"`
+4. **创建对应 planner 或入口 skill**: 在 `.claude/skills/` 下新建 skill，负责该领域的意图澄清，完成后调用 orchestrator 并传入 `workflow="project-flow"`
 
-5. **更新 CLAUDE.md**: 在"可用工作流"表格中添加新行
+5. **更新项目路由文档**: 在 `AGENTS.md` 和 `.claude/rules/common/skill-invocation.md` 中添加触发规则
 
 6. **测试**: 通过对应 planner 触发，验证 todo.md 生成正确
 
@@ -337,4 +357,6 @@ orchestrator:
 4. **状态管理**: 正确维护 ⬜/🔲/✅ 状态
 5. **用户确认**: 关键阶段需要用户确认后才继续
 6. **输出位置**: 最终笔记发布位置由用户指定；未指定时只写项目 `output/`
-7. **旧笔记更新**: 用户要更新已有笔记时调用 `note-updater`，不要从阶段 0 重跑
+7. **旧笔记导入**: 用户已有一批笔记要接入项目时调用 `legacy-note-importer`
+8. **多篇旧笔记更新**: 用户要批量更新多篇笔记时调用 `batch-note-updater`
+9. **单篇旧笔记更新**: 用户要更新一篇已有笔记内容时调用 `note-updater`，不要从阶段 0 重跑

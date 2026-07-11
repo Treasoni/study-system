@@ -29,8 +29,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "./hooks/post-conversation.sh",
-            "statusMessage": "整理项目状态..."
+            "command": "bash -lc 'if [ -x .codex/hooks/post-conversation.sh ]; then exec .codex/hooks/post-conversation.sh; fi; if [ -x hooks/post-conversation.sh ]; then exec hooks/post-conversation.sh; fi; echo \"Study System: post-conversation hook not found\"; exit 0'",
+            "statusMessage": "整理项目状态并自动提交..."
           }
         ]
       }
@@ -41,8 +41,9 @@
 
 ## 脚本约定
 
-1. 默认只做状态输出，不自动提交、不推送。
-2. 自动提交必须显式设置 `CODEX_AUTO_GIT=1`。
+1. 默认执行 `git add -A` 并自动提交，不自动推送。
+2. 自动提交可用 `CODEX_AUTO_GIT=0` 临时禁用。
 3. 自动推送必须额外设置 `CODEX_AUTO_GIT_PUSH=1`。
 4. 脚本必须可执行：`chmod +x .codex/hooks/*.sh`。
 5. 脚本内部必须定位到项目根目录，避免受 Codex 当前工作目录影响。
+6. hook 日志写入 `${TMPDIR:-/tmp}/study-system-post-conversation.log`，日志写入失败不影响提交主流程。
