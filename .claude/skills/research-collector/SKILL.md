@@ -146,19 +146,18 @@ cat ${PROJECT_DIR}/todo.md 2>/dev/null || echo "不存在"
 ```bash
 # 将当前阶段标记为进行中（根据实际执行的阶段选择 [P1] 或 [P2]）
 # 阶段 1（探测式收集）：
-sed -i '' 's/\[P1\] ⬜ 未开始/[P1] 🔲 进行中/' ${PROJECT_DIR}/todo.md
+.claude/scripts/todo-state.sh "${PROJECT_DIR}/todo.md" start P1
 # 阶段 2（深度收集）：
-sed -i '' 's/\[P2\] ⬜ 未开始/[P2] 🔲 进行中/' ${PROJECT_DIR}/todo.md
+.claude/scripts/todo-state.sh "${PROJECT_DIR}/todo.md" start P2
 ```
 
 **完成后更新状态：**
 ```bash
 # 将当前阶段标记为完成（根据实际执行的阶段选择 [P1] 或 [P2]）
 # 阶段 1 完成：
-sed -i '' 's/\[P1\] 🔲 进行中/[P1] ✅ 已完成/' ${PROJECT_DIR}/todo.md
+.claude/scripts/todo-state.sh "${PROJECT_DIR}/todo.md" complete P1
 # 阶段 2 完成：
-sed -i '' 's/\[P2\] 🔲 进行中/[P2] ✅ 已完成/' ${PROJECT_DIR}/todo.md
-sed -i '' 's/当前阶段：阶段 [0-9]/当前阶段：阶段 3/g' ${PROJECT_DIR}/todo.md
+.claude/scripts/todo-state.sh "${PROJECT_DIR}/todo.md" complete P2
 ```
 
 ---
@@ -233,9 +232,7 @@ ${WORKSPACE_PATH:-./workspace}/${PROJECT_SLUG}/02_deep_research.md
 **更新 todo.md 状态：**
 ```bash
 # 将当前阶段标记为完成，推进到下一阶段
-sed -i '' 's/\[P2\] 🔲 进行中/[P2] ✅ 已完成/' ${PROJECT_DIR}/todo.md
-# 根据实际执行阶段更新当前阶段
-sed -i '' 's/当前阶段：阶段 [0-9]/当前阶段：阶段 3/g' ${PROJECT_DIR}/todo.md
+.claude/scripts/todo-state.sh "${PROJECT_DIR}/todo.md" complete P2
 ```
 
 ## 输出示例

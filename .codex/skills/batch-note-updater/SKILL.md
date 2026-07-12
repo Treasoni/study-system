@@ -151,8 +151,9 @@ updates/{note_id}/
 ## Status Rules
 
 - 每阶段开始前读取 `todo.md`。
-- 只把当前阶段从 `[PN] ⬜ 未开始` 改为 `[PN] 🔲 进行中`。
-- 阶段产物写完、用户确认后，才改为 `[PN] ✅ 已完成`。
+- 使用 `.codex/scripts/todo-state.sh "${PROJECT_DIR}/todo.md" start PN` 将当前阶段改为 `[PN] 🔲 进行中`。
+- 阶段产物写完、用户确认后，使用 `.codex/scripts/todo-state.sh "${PROJECT_DIR}/todo.md" complete PN` 改为 `[PN] ✅ 已完成`。
+- 可选阶段不执行时，使用 `.codex/scripts/todo-state.sh "${PROJECT_DIR}/todo.md" skip PN "原因"` 明确跳过。
 - 批量更新中遇到覆盖冲突、来源不可信或更新目标不明确时，记录到异常记录并暂停该笔记。
 
 ## User-Facing Start

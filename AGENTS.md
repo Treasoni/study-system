@@ -45,6 +45,8 @@ batch-note-updater -> note-updater
 | --- | --- |
 | `research-planner` | 想学、帮我整理、研究一下、不知道从哪开始、explore topic |
 | `workflow-orchestrator` | 工作流、开始学习、新建学习项目、生成 todo.md |
+| `workflow-todo-state` | 可复用 todo 状态机、恢复流程、阶段状态脚本、其他项目复用 workflow todo |
+| `prompt-cache-optimizer` | 缓存命中优化、降低 token 成本、LLM 调用审计、提示词缓存优化 |
 | `research-collector` | 收集资料、研究资料、搜集信息、资料整理、research |
 | `legacy-note-importer` | 旧笔记导入、已有笔记、一堆笔记、批量整理、迁移到这个项目、按项目规范 |
 | `batch-note-updater` | 批量更新旧笔记、多篇笔记过时、更新一个目录的笔记、refresh multiple notes |

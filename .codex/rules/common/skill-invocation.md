@@ -49,6 +49,7 @@
 | 技能 | 触发场景 | 关键触发词 |
 |------|----------|-----------|
 | `workflow-orchestrator` | 工作流编排器，选择工作流模板并生成 todo.md | 工作流、流程、开始学习、新建项目、workflow、orchestrator |
+| `workflow-todo-state` | 为多阶段 agent 项目创建或改造可恢复的 todo.md 状态机 | 可复用 todo、状态机、恢复流程、阶段状态、其他项目复用 workflow todo |
 | `legacy-note-importer` | 将已有一批旧笔记接入项目工作流并按规范处理 | 旧笔记、已有笔记、一堆笔记、批量导入、normalize notes |
 | `batch-note-updater` | 将多篇既有笔记按批次更新，逐篇调用 note-updater | 批量更新、多篇笔记、旧笔记过时、refresh multiple notes |
 | `note-assembler` | 将章节组装成完整笔记（由 agent 调用） | 组装、合并章节、收尾、拼装、assemble |
@@ -80,6 +81,7 @@
 | 技能 | 触发场景 | 关键触发词 |
 |------|----------|-----------|
 | `skill-creator` | 创建新的 Codex 技能 | 创建 skill、新技能、写一个 skill |
+| `prompt-cache-optimizer` | 审计并优化 LLM 提示缓存、token 与调用成本 | 缓存命中、token 成本、LLM 审计、提示词缓存优化 |
 
 ### 1. 分析意图
 

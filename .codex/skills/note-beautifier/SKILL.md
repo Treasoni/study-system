@@ -139,13 +139,13 @@ cat ${PROJECT_DIR}/todo.md 2>/dev/null || echo "不存在"
 **更新 todo.md 状态：**
 ```bash
 # 将阶段 6 标记为进行中
-sed -i '' 's/\[P6\] ⬜ 未开始/[P6] 🔲 进行中/' ${PROJECT_DIR}/todo.md
+.codex/scripts/todo-state.sh "${PROJECT_DIR}/todo.md" start P6
 ```
 
 **完成后更新状态：**
 ```bash
 # 将阶段 6 标记为完成
-sed -i '' 's/\[P6\] 🔲 进行中/[P6] ✅ 已完成/' ${PROJECT_DIR}/todo.md
+.codex/scripts/todo-state.sh "${PROJECT_DIR}/todo.md" complete P6
 ```
 
 ---
@@ -313,7 +313,7 @@ sed -i '' 's/\[P6\] 🔲 进行中/[P6] ✅ 已完成/' ${PROJECT_DIR}/todo.md
 **Update todo.md status after beautification:**
 ```bash
 # Mark Phase 6 as complete (all phases done!)
-sed -i '' 's/\[P6\] 🔲 进行中/[P6] ✅ 已完成/' ${PROJECT_DIR}/todo.md
+.codex/scripts/todo-state.sh "${PROJECT_DIR}/todo.md" complete P6
 ```
 
 ## 美化模板库
