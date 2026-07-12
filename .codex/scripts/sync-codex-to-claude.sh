@@ -25,9 +25,12 @@ copy_dir ".codex/skills" ".claude/skills" --exclude "skill-creator"
 copy_dir ".codex/agents" ".claude/agents"
 copy_dir ".codex/rules" ".claude/rules" --exclude "common/hooks.md" --exclude "common/sync-workflow.md"
 copy_dir ".codex/scripts" ".claude/scripts" --exclude "sync-codex-to-claude.sh"
+if [ -d ".codex/workflows" ]; then
+  copy_dir ".codex/workflows" ".claude/workflows"
+fi
 
 # Claude Code should read/write the Claude namespace, not .codex paths.
-find .claude/skills .claude/agents .claude/rules .claude/scripts \
+find .claude/skills .claude/agents .claude/rules .claude/scripts .claude/workflows \
   -type f \( -name "*.md" -o -name "*.sh" \) \
   ! -path ".claude/rules/common/hooks.md" \
   ! -path ".claude/rules/common/sync-workflow.md" \

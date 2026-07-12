@@ -10,6 +10,7 @@
 - `.codex/agents/**`
 - `.codex/rules/**`
 - `.codex/scripts/**`
+- `.codex/workflows/**`
 - `AGENTS.md` 中改变了工作流、skill 路由或规则路径
 
 ## Command
@@ -24,6 +25,7 @@
 2. 自动把复制后文件里的 `.codex` 路径改成 `.claude`。
 3. 保留 Claude Code 专属 hooks 文档，不用 Codex hooks 覆盖。
 4. 保留 Claude Code 专属 `skill-creator`（如存在）。
+5. 同步 `.codex/workflows/` 到 `.claude/workflows/`，保持命名工作流定义可用。
 
 ## Boundary
 

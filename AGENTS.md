@@ -33,7 +33,7 @@ batch-note-updater -> note-updater
 -> moc-organizer（可选）
 ```
 
-每个阶段启动前必须读取目标项目目录下的 `todo.md`，确认当前阶段和前置状态。不能跳过阶段，不能绕过用户确认检查点。
+每个阶段启动前必须读取目标项目目录下的 `todo.md` 或命名 workflow state file，确认当前阶段和前置状态。不能跳过阶段，不能绕过用户确认检查点。
 
 项目工作区默认使用 `WORKSPACE_PATH=./workspace`。不要写死 `/workspace`。最终笔记位置由用户指定；未指定时只写入项目工作区的 `output/`。
 
@@ -44,8 +44,8 @@ batch-note-updater -> note-updater
 | Skill | Trigger |
 | --- | --- |
 | `research-planner` | 想学、帮我整理、研究一下、不知道从哪开始、explore topic |
-| `workflow-orchestrator` | 工作流、开始学习、新建学习项目、生成 todo.md |
-| `workflow-todo-state` | 可复用 todo 状态机、恢复流程、阶段状态脚本、其他项目复用 workflow todo |
+| `workflow-orchestrator` | 工作流、开始学习、新建学习项目、生成状态文件 |
+| `workflow-todo-state` | 可复用 workflow 状态机、命名状态文件、恢复流程、阶段状态脚本、workflow routing |
 | `prompt-cache-optimizer` | 缓存命中优化、降低 token 成本、LLM 调用审计、提示词缓存优化 |
 | `research-collector` | 收集资料、研究资料、搜集信息、资料整理、research |
 | `legacy-note-importer` | 旧笔记导入、已有笔记、一堆笔记、批量整理、迁移到这个项目、按项目规范 |
@@ -68,6 +68,7 @@ batch-note-updater -> note-updater
 - `.codex/rules/common/env.md`
 - `.codex/rules/common/token-optimization.md`
 - `.codex/rules/common/sync-workflow.md`
+- `.codex/rules/workflow-routing.md`
 - `.codex/rules/obsidian/note-system.md`
 - `.codex/rules/research-tools.md`
 
