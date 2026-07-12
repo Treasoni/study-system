@@ -67,8 +67,25 @@ paths:
 #### defuddle
 - **功能**: 从网页提取正文内容，去除广告、导航等干扰元素
 - **使用场景**: 提取网页、网页正文
-- **调用方式**: 使用 Skill 工具调用 defuddle
+- **调用方式**: 使用 Skill 工具调用 `obsidian:defuddle`
 - **触发词**: 提取网页、网页正文、defuddle
+- **适用 URL**: 不以 `.md` 结尾的普通网页；.md 文件用 WebFetch 直接读取
+
+#### research-collector
+- **功能**: 多策略高效资料收集 — Fork Subagent 隔离收集、两阶段粗筛+精读、格式约束优化 token 消耗、本地缓存复用
+- **使用场景**: 系统性资料收集、批量搜索、深度研究
+- **调用方式**: 使用 Skill 工具调用 `research-collector`
+- **触发词**: 收集资料、研究资料、搜集信息、资料整理、research
+- **核心策略**:
+  - Fork Subagent 并行搜索，每个只返回结构化摘要（<150 字）
+  - 第一阶段批量粗筛 → 第二阶段精读
+  - 本地缓存复用减少重复搜索
+
+#### research-planner
+- **功能**: 学习笔记需求澄清与引导，调用 workflow-orchestrator 生成项目结构
+- **使用场景**: 开始新主题研究前的需求明确和方向引导
+- **调用方式**: 使用 Skill 工具调用 `research-planner`
+- **触发词**: 想学、帮我整理、研究一下、了解一下、不知道从哪开始
 
 ---
 
@@ -83,11 +100,17 @@ paths:
 
 ### 深度研究流程
 ```
-1. 多次搜索不同关键词
-2. 提取多个来源的内容
-3. 整理和归纳信息
-4. 生成结构化笔记
+1. research-planner → 明确学习方向和范围（生成 00_intent.md）
+2. research-collector → 系统性资料收集（Fork Subagent 并行搜索多个关键词）
+3. 粗筛结果 → 精读关键资料 → WebFetch/defuddle 提取正文
+4. 整理和归纳信息 → 生成 02_deep_research.md
+5. 后续接 outline-generator → chapter-writer → note-assembler 完整笔记流程
 ```
+
+### 单篇网页正文提取
+- **普通网页**（非 `.md`）→ `obsidian:defuddle`（Cleaner 输出，去除导航/广告）
+- **Markdown 文件** → `WebFetch`（直接读取纯文本）
+- **需要认证的页面** → 用 `gh` CLI（GitHub）或其他专用工具
 
 ### 图片分析流程
 ```
@@ -104,10 +127,12 @@ paths:
 |------|----------|------|
 | 快速搜索 | WebSearch | 内置工具，响应快 |
 | 实时搜索 | MiniMax web_search | 结构化结果，包含日期 |
-| 提取网页正文 | defuddle | 专业提取，去除干扰 |
-| 提取简单网页 | WebFetch | 内置工具，简单直接 |
+| 提取网页正文 | obsidian:defuddle | 专业提取，去除干扰 |
+| 提取 Markdown/通用 | WebFetch | 内置工具，简单直接 |
 | 图片文字提取 | MiniMax understand_image | OCR 功能 |
 | 图片内容描述 | MiniMax understand_image | 视觉分析 |
+| 系统性资料收集 | research-collector | Fork Subagent 并行搜索 + 缓存 |
+| 新主题需求澄清 | research-planner | 引导明确方向和范围 |
 
 ---
 
@@ -115,5 +140,9 @@ paths:
 
 1. **组合使用**: 搜索 + 提取是基本模式
 2. **多源验证**: 重要信息从多个来源确认
-3. **保存原文**: 提取内容时保留原始 URL 以便溯源
+3. **Token 优化**:
+   - 搜索阶段只保存标题、URL、100-200 字摘要，不保存网页全文
+   - 使用 `research-collector` 的 Fork Subagent 策略隔离搜索上下文
+   - 精读阶段只读取与当前主题直接相关的页面
 4. **格式统一**: 使用 Obsidian Markdown 格式保存笔记
+5. **保留来源**: 提取内容时保留原始 URL 以便溯源
