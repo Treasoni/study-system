@@ -31,20 +31,45 @@ Use named workflow definitions and named run state files:
   feature-development/
     workflow.md
     state-template.md
+    routing.yaml
 .claude/rules/
   workflow-routing.md
+.claude/scripts/
+  sync-workflow-routing.sh
 workspace/workflow-runs/
   payment-refactor.workflow.md
 ```
 
 `todo-state.sh` accepts any Markdown state file path, so the run file does not need to be named `todo.md`.
 
+## Register Workflows From Metadata
+
+Do not hand-edit the generated workflow table. Add a one-line scalar `routing.yaml` to each workflow directory:
+
+```yaml
+workflow_id: feature-development
+required: true
+when_to_use: "Implementing product changes"
+triggers: "new feature; bug fix; refactor"
+excludes: "read-only question"
+state_file_pattern: "workspace/workflow-runs/feature-{task}.workflow.md"
+```
+
+Then synchronize the routing registry:
+
+```bash
+.claude/scripts/sync-workflow-routing.sh
+.claude/scripts/sync-workflow-routing.sh --check
+```
+
+The script owns only the section delimited by `workflow-routing:generated` markers. It leaves routing guidance and the active-run table intact.
+
 ## Add Project Rule
 
 Add this to the project entry instructions:
 
 ```markdown
-Every workflow phase must read the active workflow state file before acting. Workflow state files live under `workspace/workflow-runs/` and should be named after the task, such as `payment-refactor.workflow.md`. Do not skip phases. Change phase state only through `.claude/scripts/todo-state.sh`.
+Before any action that changes project files, runs project commands, or calls external services, read `.claude/rules/workflow-routing.md` and match the user's request against its triggers and exclusions. When a required workflow matches, read its definition, create or resume its state file, and start the current phase before acting. Every workflow phase must read the active workflow state file before acting. Workflow state files live under `workspace/workflow-runs/` and should be named after the task, such as `payment-refactor.workflow.md`. Do not skip phases. Change phase state only through `.claude/scripts/todo-state.sh`. After every workflow change, run `.claude/scripts/sync-workflow-routing.sh` and require `.claude/scripts/sync-workflow-routing.sh --check` to pass.
 ```
 
 ## Retrofit Existing State Templates
@@ -90,3 +115,4 @@ Every workflow phase must read the active workflow state file before acting. Wor
 - Try starting P2 before P1 is complete; it should fail.
 - Try skipping an optional phase; `current_phase` should advance to the next pending phase.
 - Confirm `## 异常记录` receives skip/block rows when present.
+- Change a `routing.yaml` value, confirm `sync-workflow-routing.sh --check` fails, then synchronize and confirm it passes.

@@ -18,15 +18,16 @@ Install into another project:
 Then:
 
 1. Create workflow definitions under `.codex/workflows/{workflow-id}/`.
-2. Create run state files under `workspace/workflow-runs/{task-or-feature}.workflow.md`.
-3. Register workflow routing in `.codex/rules/workflow-routing.md`.
-4. Create or update the state file from `references/basic-state-template.md`.
-5. Ensure every phase has exactly one status line:
+2. Add `routing.yaml` to every workflow directory as the source of truth for its trigger conditions and state file pattern.
+3. Generate the routing registry with `.codex/scripts/sync-workflow-routing.sh`.
+4. Create run state files under `workspace/workflow-runs/{task-or-feature}.workflow.md`.
+5. Create or update the state file from `references/basic-state-template.md`.
+6. Ensure every phase has exactly one status line:
    ```markdown
    > [P0] ⬜ 未开始
    ```
-6. Make every workflow skill or agent read the relevant workflow state file before starting work.
-7. Update state only through the script:
+7. Make every workflow skill or agent route the task, then read the relevant workflow state file before starting work.
+8. Update state only through the script:
    ```bash
    .codex/scripts/todo-state.sh "${WORKFLOW_STATE_FILE}" start P1
    .codex/scripts/todo-state.sh "${WORKFLOW_STATE_FILE}" complete P1
@@ -44,11 +45,15 @@ Use separate files for workflow definitions and workflow runs:
     feature-development/
       workflow.md
       state-template.md
+      routing.yaml
     release-check/
       workflow.md
       state-template.md
+      routing.yaml
   rules/
     workflow-routing.md
+  scripts/
+    sync-workflow-routing.sh
 workspace/
   workflow-runs/
     payment-refactor.workflow.md
@@ -74,6 +79,30 @@ Each reusable workflow state file should contain:
 
 See `references/basic-state-template.md` for a minimal portable state template, `references/workflow-routing-template.md` for routing rules, and `references/integration.md` for retrofit instructions.
 
+## Routing Metadata and Synchronization
+
+Each workflow directory must contain a minimal scalar `routing.yaml`:
+
+```yaml
+workflow_id: feature-development
+required: true
+when_to_use: "Implementing or changing a product feature"
+triggers: "new feature; bug fix; refactor"
+excludes: "read-only question; inspect-only request"
+state_file_pattern: "workspace/workflow-runs/feature-{task}.workflow.md"
+```
+
+`workflow_id` must match its directory name. Keep values on one line and do not use `|`, because they are rendered into a Markdown table.
+
+After every workflow create, change, rename, or deletion, run:
+
+```bash
+.codex/scripts/sync-workflow-routing.sh
+.codex/scripts/sync-workflow-routing.sh --check
+```
+
+The first command regenerates only the marked block in `.codex/rules/workflow-routing.md`; the second is suitable for pre-commit or CI and fails when the registry is stale.
+
 ## State Rules
 
 - `start PN` requires all previous phases to be `✅ 已完成` or `⏭️ 跳过`.
@@ -88,9 +117,11 @@ Keep the change small:
 
 1. Add the script.
 2. Add `.codex/workflows/`, `workspace/workflow-runs/`, and `.codex/rules/workflow-routing.md`.
-3. Add frontmatter and unique phase lines to existing state files.
-4. Replace ad hoc `sed` or manual status edits in skills/agents with `todo-state.sh`.
-5. Add one rule to the project entry instructions: every phase must read the relevant workflow state file before acting.
-6. Test one happy path and one blocked/invalid transition.
+3. Add `routing.yaml` to every existing workflow, then run `sync-workflow-routing.sh`.
+4. Add frontmatter and unique phase lines to existing state files.
+5. Replace ad hoc `sed` or manual status edits in skills/agents with `todo-state.sh`.
+6. Add a project entry rule: before any mutating action, route the task; if a required workflow matches, create or resume its run and start the current phase.
+7. Run `sync-workflow-routing.sh --check` in pre-commit or CI.
+8. Test one happy path, one blocked/invalid transition, and one stale-routing failure.
 
 Do not force a project to adopt this exact workflow structure. Preserve local phase names, output files, and user confirmation gates.

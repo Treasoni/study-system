@@ -35,6 +35,14 @@ batch-note-updater -> note-updater
 
 每个阶段启动前必须读取目标项目目录下的 `todo.md` 或命名 workflow state file，确认当前阶段和前置状态。不能跳过阶段，不能绕过用户确认检查点。
 
+## Mandatory Workflow Dispatch
+
+在进行任何会修改项目文件、运行项目命令或调用外部服务的操作前，必须先读取 `.codex/rules/workflow-routing.md`，使用用户原始请求匹配其中的正向触发条件与排除条件。
+
+- 命中 `Required: yes` 的工作流时，必须读取对应 `.codex/workflows/{workflow-id}/workflow.md`，创建或恢复命名 workflow state file，并通过 `.codex/scripts/todo-state.sh` 启动当前 phase 后才能执行。
+- 无法判断工作流是否命中时，先请求用户确认；不得直接绕过工作流执行。
+- 每次工作流新增、修改、重命名或删除后，必须运行 `.codex/scripts/sync-workflow-routing.sh`，并确保 `.codex/scripts/sync-workflow-routing.sh --check` 通过。
+
 项目工作区默认使用 `WORKSPACE_PATH=./workspace`。不要写死 `/workspace`。最终笔记位置由用户指定；未指定时只写入项目工作区的 `output/`。
 
 ## Skill Routing
