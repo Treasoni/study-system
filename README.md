@@ -27,12 +27,17 @@ cp .env.example .env
 
 ```bash
 WORKSPACE_PATH=./workspace
-NOTES_OUTPUT_PATH=${WORKSPACE_PATH}/output
+OUTPUT_PATH=${WORKSPACE_PATH}/output
+NOTES_OUTPUT_PATH=${OUTPUT_PATH}
 CHAPTERS_PATH=${WORKSPACE_PATH}/chapters
-MINIMAX_API_KEY=your-key-here
+OPENAI_API_KEY=
+MINIMAX_API_KEY=
+DEFAULT_LLM_PROVIDER=
+CODEX_AUTO_GIT=0
+CODEX_AUTO_GIT_PUSH=0
 ```
 
-`.env` 不要提交到 Git。默认工作区是 `./workspace`，没有特别需要时不要改成绝对路径。
+`.env` 不要提交到 Git。默认工作区是 `./workspace`，项目内路径优先使用相对路径；Obsidian vault 这类外部发布路径只写在你自己的本地 `.env`。
 
 ### 2. 在 Codex 中打开项目
 
@@ -166,6 +171,55 @@ bash templates/prompt-cache-bootstrap.sh --apply --platform both --target /path/
 ```
 
 只配置一个平台时，把 `both` 换成 `codex` 或 `claude`。
+
+## 检查环境变量模板
+
+更新代码、脚本或工作流后，用环境变量模板检查脚本确认 `.env.example` 是否覆盖了项目真实引用的变量，并检查模板里有没有误放真实密钥。
+
+最常用的命令：
+
+```bash
+.codex/scripts/check-env-template.sh
+```
+
+看到下面这行就表示基础检查通过：
+
+```text
+Env template check passed.
+```
+
+默认模式会做三件事：
+
+- 发现代码、脚本、hooks、workflow 中引用了变量，但 `.env.example` 没写时，检查失败。
+- 发现 `.env.example` 里的敏感变量疑似填了真实值时，检查失败。
+- 发现 `.env.example` 里有暂时未被扫描文件引用的变量时，只提示，不失败。
+
+如果你希望“未被引用的模板变量”也导致失败，使用严格模式：
+
+```bash
+.codex/scripts/check-env-template.sh --strict
+```
+
+如果要检查另一个模板文件，使用：
+
+```bash
+.codex/scripts/check-env-template.sh --env-file .env.production.example
+```
+
+常见输出和处理方式：
+
+| 输出 | 含义 | 处理方式 |
+| --- | --- | --- |
+| `Missing from .env.example` | 项目里用到了变量，但模板没记录 | 把变量补进 `.env.example`，敏感值留空 |
+| `Sensitive-looking variables have non-placeholder values` | 模板里疑似出现真实 key/token/password | 立刻删掉真实值，改成空值或不可用占位符 |
+| `Template variables not referenced by scanned files` | 模板里有预留变量，但当前扫描没发现引用 | 默认可保留；发布通用模板前可用 `--strict` 清理 |
+
+推荐在这些时候运行：
+
+1. 新增或修改代码中的环境变量读取后。
+2. 更新 `.env.example` 后。
+3. 修改 `.codex/scripts`、hooks 或 workflow 后。
+4. 提交前做一次安全检查。
 
 ## 协作和安全约定
 
