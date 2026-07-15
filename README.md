@@ -67,6 +67,7 @@ Codex 会先判断是否命中强制工作流。命中后会创建或恢复 `wor
 
 ```text
 research-planner
+-> workflow-orchestrator
 -> research-collector
 -> outline-generator
 -> chapter-writer
@@ -171,6 +172,20 @@ bash templates/prompt-cache-bootstrap.sh --apply --platform both --target /path/
 ```
 
 只配置一个平台时，把 `both` 换成 `codex` 或 `claude`。
+
+## 检查项目健康
+
+工作流、agent 或 skill 变更后，先运行工作流健康检查，确认没有旧 `todo.md` 状态文件引用、手写阶段 `sed`、过期 `.claude/skills` 示例路径或陈旧 routing 表：
+
+```bash
+.codex/scripts/workflow-health-check.sh
+```
+
+看到下面这行就表示检查通过：
+
+```text
+Workflow health check passed.
+```
 
 ## 检查环境变量模板
 

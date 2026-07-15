@@ -33,7 +33,7 @@ batch-note-updater -> note-updater
 -> moc-organizer（可选）
 ```
 
-每个阶段启动前必须读取目标项目目录下的 `todo.md` 或命名 workflow state file，确认当前阶段和前置状态。不能跳过阶段，不能绕过用户确认检查点。
+每个阶段启动前必须读取命名 workflow state file（`workspace/workflow-runs/*.workflow.md`），确认当前阶段和前置状态。`todo.md` 只作为历史兼容概念，不作为新运行的状态文件。不能跳过阶段，不能绕过用户确认检查点。
 
 ## Mandatory Workflow Dispatch
 

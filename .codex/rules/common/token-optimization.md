@@ -4,7 +4,7 @@
 
 ## Default Strategy
 
-1. 先读 `todo.md`、`00_intent.md`、`03_outline.md` 的相关小段，不整篇加载所有素材。
+1. 先读当前 `workspace/workflow-runs/*.workflow.md`、`00_intent.md`、`03_outline.md` 的相关小段，不整篇加载所有素材。
 2. 读取 `02_deep_research.md` 时优先用 `rg` 定位章节相关引用，只加载当前章节需要的片段。
 3. 逐章写作时一次只处理一章；不要把所有章节、全部素材和最终笔记同时放进上下文。
 4. 每个阶段产出结构化中间文件，后续阶段优先引用文件路径和锚点，而不是重复粘贴全文。
@@ -37,7 +37,7 @@
 
 | 文件 | 默认读取方式 |
 | --- | --- |
-| `todo.md` | 全读，体量小 |
+| `workspace/workflow-runs/*.workflow.md` | 全读，体量小 |
 | `00_intent.md` | 全读，体量小 |
 | `01_explore_result.md` | 只读摘要和用户选择 |
 | `02_deep_research.md` | 按关键词/引用编号局部读取 |
