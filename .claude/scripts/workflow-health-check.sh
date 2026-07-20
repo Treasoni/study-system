@@ -74,6 +74,10 @@ if ! "$this_dir/scripts/sync-workflow-routing.sh" --check; then
   fail "Workflow routing table is stale."
 fi
 
+if ! python3 "$this_dir/platform/manifest-registry.py" --root . validate; then
+  fail "Agent Platform manifest registry validation failed."
+fi
+
 if [ "$status" -eq 0 ]; then
   echo "Workflow health check passed."
 fi

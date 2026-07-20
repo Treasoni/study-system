@@ -82,6 +82,7 @@
 |------|----------|-----------|
 | `skill-creator` | 创建新的 Claude Code 技能 | 创建 skill、新技能、写一个 skill |
 | `prompt-cache-optimizer` | 审计并优化 LLM 提示缓存、token 与调用成本 | 缓存命中、token 成本、LLM 审计、提示词缓存优化 |
+| `manifest-platform` | 安装、迁移或校验统一 Agent Platform manifest | manifest、agent 平台、自动发现、权限声明、artifact registry |
 
 ### 1. 分析意图
 

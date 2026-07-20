@@ -1,0 +1,20 @@
+apiVersion: agents.study-system/v1
+kind: Hook
+metadata:
+  name: post-conversation
+  version: 1.0.0
+  description: "Report project changes after a Codex conversation and optionally commit them."
+spec:
+  entrypoint: ../post-conversation.sh
+  event: Stop
+  capabilities:
+    - lifecycle.project-status
+  permissions:
+    filesystem: write
+    network: allow
+    subprocess: allow
+    git: write
+  dependsOn: []
+  lifecycle:
+    discoverable: true
+    deprecated: false

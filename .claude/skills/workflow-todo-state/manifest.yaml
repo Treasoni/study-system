@@ -1,0 +1,19 @@
+apiVersion: agents.study-system/v1
+kind: Skill
+metadata:
+  name: workflow-todo-state
+  version: 1.0.0
+  description: "Create and maintain recoverable named workflow state machines."
+spec:
+  entrypoint: SKILL.md
+  capabilities:
+    - workflow.state.manage
+  permissions:
+    filesystem: write
+    network: none
+    subprocess: allow
+    git: none
+  dependsOn: []
+  lifecycle:
+    discoverable: true
+    deprecated: false

@@ -4,9 +4,9 @@
 
 | Agent | 用途 | 调用方式 |
 |-------|------|----------|
-| `outline-generator` | 生成学习笔记大纲 | 读取 `.codex/agents/outline-generator.md` 后执行，或派发 subagent |
-| `chapter-writer` | 逐章写作学习笔记 | 读取 `.codex/agents/chapter-writer.md` 后执行，或派发 subagent |
-| `note-assembler` | 组装章节成完整笔记 | 读取 `.codex/agents/note-assembler.md` 后执行，或派发 subagent |
+| `outline-generator` | 生成学习笔记大纲 | 先读取 `.codex/agents/outline-generator/manifest.yaml`，再读取其入口并执行或派发 subagent |
+| `chapter-writer` | 逐章写作学习笔记 | 先读取 `.codex/agents/chapter-writer/manifest.yaml`，再读取其入口并执行或派发 subagent |
+| `note-assembler` | 组装章节成完整笔记 | 先读取 `.codex/agents/note-assembler/manifest.yaml`，再读取其入口并执行或派发 subagent |
 
 ## 调用流程
 

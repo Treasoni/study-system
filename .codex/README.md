@@ -11,6 +11,7 @@
 - `hooks.json`：本项目 Codex hooks 注册表。
 - `hooks/`：本项目 Codex hook 脚本。
 - `scripts/`：Codex 可用的辅助脚本副本。
+- `platform/`：统一 manifest 注册表、Schema 和权限策略。
 - `commands/`：预留给 Codex prompt/command 封装。
 
 ## Isolation
@@ -24,6 +25,17 @@ Codex 运行时应写本项目 `.codex/` 或学习项目工作区，不写 `.cla
 - `Stop` -> `.codex/hooks/post-conversation.sh`
 
 默认 Stop hook 只报告检测到的项目改动，不提交也不推送。设置 `CODEX_AUTO_GIT=1` 才会执行 `git add -A` 和自动提交；需要推送时再额外设置 `CODEX_AUTO_GIT_PUSH=1`。
+
+## Agent Platform Registry
+
+Workflow、Skill、Subagent 和 Hook 都以相邻的 `manifest.yaml` 作为统一注册契约。注册表按目录自动发现它们，并校验入口、SemVer 版本、依赖、权限声明及 Hook 注册：
+
+```bash
+python3 .codex/platform/manifest-registry.py --root . validate
+python3 .codex/platform/manifest-registry.py --root . list
+```
+
+`manifest-platform` Skill 携带可复制的安装器；其他项目安装后可使用同一份 Schema 和校验器。manifest 声明权限请求，但不会绕过 Codex 的用户授权或工具策略。
 
 ## Note Workflow Extensions
 

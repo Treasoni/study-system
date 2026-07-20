@@ -8,6 +8,7 @@
 |------|--------|----------|
 | `.codex/hooks.json` | 本项目 hooks 注册表 | ✅ |
 | `.codex/hooks/*.sh` | 本项目 hook 脚本 | ✅ |
+| `.codex/hooks/{name}/manifest.yaml` | Hook 入口、版本、能力和请求权限契约 | ✅ |
 | `~/.codex/config.toml` | 全局 Codex 状态/信任记录 | ❌ 不由本项目维护 |
 
 ## 事件速查
@@ -18,6 +19,8 @@
 | `Stop` | Codex 停止响应/会话收尾 | 通常用于状态整理 |
 
 当前项目只注册 `Stop`，见 `.codex/hooks.json`。
+
+每个 Hook 还必须具有对应 `manifest.yaml`，并通过 `python3 .codex/platform/manifest-registry.py --root . validate` 验证注册表与实际入口一致。manifest 只声明请求权限；Codex 的用户授权和运行时策略仍是唯一的权限授予来源。
 
 ## hooks.json
 

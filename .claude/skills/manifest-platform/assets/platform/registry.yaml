@@ -1,0 +1,26 @@
+apiVersion: agents.study-system/v1
+discovery:
+  kindDirectories:
+    Workflow: .claude/workflows
+    Skill: .claude/skills
+    Subagent: .claude/agents
+    Hook: .claude/hooks
+policy:
+  allowedPermissions:
+    filesystem:
+      - none
+      - read
+      - write
+    network:
+      - none
+      - allow
+    subprocess:
+      - none
+      - allow
+    git:
+      - none
+      - read
+      - write
+  hookEvents:
+    - SessionStart
+    - Stop

@@ -1,0 +1,20 @@
+apiVersion: agents.study-system/v1
+kind: Skill
+metadata:
+  name: manifest-platform
+  version: 1.0.0
+  description: "Install and validate the unified Agent Platform manifest registry."
+spec:
+  entrypoint: SKILL.md
+  capabilities:
+    - platform.manifest.install
+    - platform.manifest.validate
+  permissions:
+    filesystem: write
+    network: none
+    subprocess: allow
+    git: none
+  dependsOn: []
+  lifecycle:
+    discoverable: true
+    deprecated: false

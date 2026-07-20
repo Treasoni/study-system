@@ -127,12 +127,40 @@ batch-note-updater
 │   ├── rules/                 # 长期规则
 │   ├── agents/                # 可模拟的写作 agent 角色
 │   ├── scripts/               # 状态、同步和辅助脚本
+│   ├── platform/              # manifest 注册表、Schema 与策略
 │   └── hooks.json             # 项目本地 hooks
 ├── templates/                 # prompt cache 优化模板
 └── workspace/                 # 默认运行产物目录，按需生成
 ```
 
 Codex 专用配置只写在 `.codex/`。不要手动把 Codex 配置写到全局 `~/.codex/`，也不要在普通 Codex 任务里修改 `.claude/`。
+
+## Agent Platform manifest
+
+Workflow、Skill、Subagent 和 Hook 都使用相邻的 `manifest.yaml` 声明统一的名称、SemVer 版本、入口、能力、依赖和请求权限。`.codex/platform/` 会按约定目录自动发现这些工件，而不是维护一份手写清单：
+
+```bash
+python3 .codex/platform/manifest-registry.py --root . validate
+python3 .codex/platform/manifest-registry.py --root . list
+```
+
+权限是“请求”而不是授权：真实执行仍由 Codex 的用户授权、工具策略和宿主环境决定。要复用到另一个项目，复制或安装本项目的 `.codex/skills/manifest-platform/`，然后运行：
+
+```bash
+.codex/skills/manifest-platform/scripts/install.sh --target /path/to/other-project
+```
+
+安装后用 `manifest-registry.py init` 为新工件生成最小 manifest，再按真实能力收紧权限；详见 `.codex/platform/README.md`。
+
+若另一个项目还没有这个 Skill，可先复制它的自包含目录：
+
+```bash
+mkdir -p /path/to/other-project/.codex/skills
+cp -R /path/to/study-system/.codex/skills/manifest-platform \
+  /path/to/other-project/.codex/skills/
+/path/to/other-project/.codex/skills/manifest-platform/scripts/install.sh \
+  --target /path/to/other-project
+```
 
 ## 状态文件怎么用
 

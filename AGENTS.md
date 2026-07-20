@@ -9,6 +9,15 @@
 5. 需要模拟原 Claude agent 时，读取 `.codex/agents/{agent-name}.md`，按其中角色、输入、输出和检查点执行。
 6. 修改 `.codex/skills`、`.codex/agents`、`.codex/rules` 或 `.codex/scripts` 后，运行 `.codex/scripts/sync-codex-to-claude.sh`，保持 Claude Code 配置同步。
 
+## Agent Platform Manifest
+
+Workflow、Skill、Subagent 和 Hook 都必须在各自 `.codex/{workflows,skills,agents,hooks}/{name}/manifest.yaml` 中声明统一契约。manifest 负责自动发现、版本、入口、能力、依赖和请求权限；它不自行授予任何工具权限，运行时仍以平台策略和用户授权为准。
+
+- 新增、删除、重命名或实质修改上述工件时，同步更新其 manifest 的版本、依赖和最小权限。
+- 入口路径相对 manifest 目录解析，且不得离开 `.codex/`。
+- 变更后运行 `python3 .codex/platform/manifest-registry.py --root . validate`；Hook 还必须继续在 `.codex/hooks.json` 中注册。
+- 复用到其他项目时，使用项目内 `manifest-platform` Skill 的安装脚本，不把该平台配置写入全局 `~/.codex/`。
+
 ## Core Workflow
 
 学习笔记生产流程保持与 Claude Code 版一致：
@@ -54,6 +63,7 @@ batch-note-updater -> note-updater
 | `research-planner` | 想学、帮我整理、研究一下、不知道从哪开始、explore topic |
 | `workflow-orchestrator` | 工作流、开始学习、新建学习项目、生成状态文件 |
 | `workflow-todo-state` | 可复用 workflow 状态机、命名状态文件、恢复流程、阶段状态脚本、workflow routing |
+| `manifest-platform` | 统一 manifest、Agent 平台注册、工件自动发现、权限声明、版本和依赖校验 |
 | `prompt-cache-optimizer` | 缓存命中优化、降低 token 成本、LLM 调用审计、提示词缓存优化 |
 | `research-collector` | 收集资料、研究资料、搜集信息、资料整理、research |
 | `legacy-note-importer` | 旧笔记导入、已有笔记、一堆笔记、批量整理、迁移到这个项目、按项目规范 |
