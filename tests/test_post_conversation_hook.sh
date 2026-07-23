@@ -5,6 +5,11 @@ ROOT="$(cd "$(dirname "$BASH_SOURCE")/.." && pwd)"
 TEST_ROOT="$(mktemp -d /private/tmp/study-system-hook-test.XXXXXX)"
 trap 'rm -rf "$TEST_ROOT"' EXIT
 
+[ -x "$ROOT/.codex/hooks/post-conversation.sh" ] || {
+  printf 'FAIL: post-conversation hook is not executable\n' >&2
+  exit 1
+}
+
 fail() {
   printf 'FAIL: %s\n' "$1" >&2
   exit 1
