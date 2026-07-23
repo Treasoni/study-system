@@ -2,7 +2,7 @@ apiVersion: agents.study-system/v1
 kind: Workflow
 metadata:
   name: batch-note-update-flow
-  version: 1.0.0
+  version: 1.1.0
   description: "Safely plan and apply minimal updates to a collection of existing notes."
 spec:
   entrypoint: workflow.md
