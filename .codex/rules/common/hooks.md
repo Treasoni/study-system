@@ -45,8 +45,8 @@
 ## 脚本约定
 
 1. 默认只检查并记录项目状态，不执行 `git add`、提交或推送。
-2. 设置 `CODEX_AUTO_GIT=1` 后才执行 `git add -A` 和自动提交。
-3. 自动推送必须额外设置 `CODEX_AUTO_GIT_PUSH=1`。
+2. 设置 `CODEX_AUTO_GIT=1` 后，先扫描工作区，再执行 `git add -A`，最后扫描暂存区；任一扫描失败都不得提交。
+3. Stop hook 不自动推送；推送必须由用户在审阅后手动执行。
 4. 脚本必须可执行：`chmod +x .codex/hooks/*.sh`。
 5. 脚本内部必须定位到项目根目录，避免受 Codex 当前工作目录影响。
-6. hook 日志写入 `${TMPDIR:-/tmp}/study-system-post-conversation.log`，日志写入失败不影响提交主流程。
+6. hook 日志写入 `/tmp/study-system-post-conversation.log`，日志写入失败不影响提交主流程。

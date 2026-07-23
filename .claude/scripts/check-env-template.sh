@@ -116,6 +116,7 @@ extract_vars() {
     while (/os\.getenv\(['\''"]([A-Z][A-Z0-9_]*)['\''"]/g) { print "$1\n" }
     while (/os\.environ(?:\.get)?\(['\''"]([A-Z][A-Z0-9_]*)['\''"]/g) { print "$1\n" }
     while (/os\.environ\[['\''"]([A-Z][A-Z0-9_]*)['\''"]\]/g) { print "$1\n" }
+    while (/\bprintenv[[:space:]]+([A-Z][A-Z0-9_]*)/g) { print "$1\n" }
     while (/\$\{([A-Z][A-Z0-9_]*)(?::-[^}]*)?\}/g) { print "$1\n" }
     while (/\b([A-Z][A-Z0-9_]*(?:_API_KEY|_TOKEN|_SECRET|_PASSWORD|_DSN|_URL|_PATH|_MODEL|_PROVIDER|_ENABLED|_ENV|_PORT))\b/g) { print "$1\n" }
   '
@@ -129,13 +130,14 @@ rg -n --hidden --no-heading \
   -g '!build/**' \
   -g '!.next/**' \
   -g '!coverage/**' \
+  -g '!tests/**' \
   -g '!workspace/**' \
   -g '!README.md' \
   -g '!.env' \
   -g '!.env.*' \
   -g '!.env.example' \
   -g '!.claude/rules/common/env.md' \
-  'process\.env|import\.meta\.env|os\.getenv|os\.environ|\$\{[A-Z][A-Z0-9_]*|[A-Z][A-Z0-9_]*(?:_API_KEY|_TOKEN|_SECRET|_PASSWORD|_DSN|_URL|_PATH|_MODEL|_PROVIDER|_ENABLED|_ENV|_PORT)' \
+  'process\.env|import\.meta\.env|os\.getenv|os\.environ|printenv[[:space:]]+[A-Z][A-Z0-9_]*|\$\{[A-Z][A-Z0-9_]*|[A-Z][A-Z0-9_]*(?:_API_KEY|_TOKEN|_SECRET|_PASSWORD|_DSN|_URL|_PATH|_MODEL|_PROVIDER|_ENABLED|_ENV|_PORT)' \
   "$PROJECT_ROOT" \
   | extract_vars \
   | grep -Fvx -f "$ignored_vars_file" \

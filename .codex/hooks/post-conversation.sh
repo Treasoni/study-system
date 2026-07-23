@@ -1,19 +1,22 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Project-local Codex Stop hook for Study System.
-# Default behavior only reports project changes. Set CODEX_AUTO_GIT=1 to add and commit.
+# Default behavior reports project changes. CODEX_AUTO_GIT=1 enables a
+# secret-audited automatic commit; pushing always remains a manual action.
 
 set -euo pipefail
 
-PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+PROJECT_ROOT="$(cd "$(dirname "$BASH_SOURCE")/../.." && pwd)"
 cd "$PROJECT_ROOT"
 
-LOG_FILE="${TMPDIR:-/tmp}/study-system-post-conversation.log"
+LOG_FILE="/tmp/study-system-post-conversation.log"
+SECRET_AUDIT=".codex/skills/security-secret-audit/scripts/audit-secrets.sh"
+
 log() {
   local message="$1"
   local line
-  line="[$(date '+%Y-%m-%d %H:%M:%S')] ${message}"
+  line="[$(date '+%Y-%m-%d %H:%M:%S')] $message"
   echo "$line"
-  printf '%s\n' "$line" >> "$LOG_FILE" 2>/dev/null || true
+  echo "$line" >> "$LOG_FILE" 2>/dev/null || true
 }
 
 git rev-parse --is-inside-work-tree >/dev/null 2>&1 || exit 0
@@ -25,12 +28,17 @@ if [ -z "$changed_files" ]; then
 fi
 
 log "Study System: project changes detected:"
-printf '%s\n' "$changed_files"
-printf '%s\n' "$changed_files" >> "$LOG_FILE" 2>/dev/null || true
+echo "$changed_files"
+echo "$changed_files" >> "$LOG_FILE" 2>/dev/null || true
 
-if [ "${CODEX_AUTO_GIT:-0}" != "1" ]; then
-  log "Auto commit disabled because CODEX_AUTO_GIT=${CODEX_AUTO_GIT:-0}."
+if [ "$(printenv CODEX_AUTO_GIT 2>/dev/null || true)" != "1" ]; then
+  log "Auto commit disabled because CODEX_AUTO_GIT is not 1."
   exit 0
+fi
+
+if ! "$SECRET_AUDIT"; then
+  log "Automatic commit blocked by working-tree secret audit."
+  exit 1
 fi
 
 log "Running git add -A."
@@ -41,14 +49,11 @@ if git diff --cached --quiet; then
   exit 0
 fi
 
+if ! "$SECRET_AUDIT" --staged; then
+  log "Automatic commit blocked by staged secret audit."
+  exit 1
+fi
+
 log "Creating automatic commit."
 ".codex/scripts/git-autocommit.sh"
-log "Automatic commit complete."
-
-if [ "${CODEX_AUTO_GIT_PUSH:-0}" = "1" ]; then
-  current_branch="$(git branch --show-current)"
-  if [ -n "$current_branch" ]; then
-    log "Pushing branch ${current_branch}."
-    git push origin "$current_branch"
-  fi
-fi
+log "Automatic commit complete. Push manually after review."
