@@ -23,21 +23,9 @@ cd study-system
 cp .env.example .env
 ```
 
-按需编辑 `.env`：
+`.env.example` 只包含当前脚本真正读取的最小配置。`.env` 不要提交到 Git。默认工作区是 `./workspace`，项目内路径优先使用相对路径。
 
-```bash
-WORKSPACE_PATH=./workspace
-OUTPUT_PATH=${WORKSPACE_PATH}/output
-NOTES_OUTPUT_PATH=${OUTPUT_PATH}
-CHAPTERS_PATH=${WORKSPACE_PATH}/chapters
-OPENAI_API_KEY=
-MINIMAX_API_KEY=
-DEFAULT_LLM_PROVIDER=
-CODEX_AUTO_GIT=0
-CODEX_AUTO_GIT_PUSH=0
-```
-
-`.env` 不要提交到 Git。默认工作区是 `./workspace`，项目内路径优先使用相对路径；Obsidian vault 这类外部发布路径只写在你自己的本地 `.env`。
+需要 Obsidian 路径、模型、供应商或服务配置时，查看 `.env.optional.example`，只复制所需变量到你自己的本地 `.env`。自动提交默认关闭；启用 `CODEX_AUTO_GIT=1` 后仍需手动推送。
 
 ### 2. 在 Codex 中打开项目
 
@@ -121,6 +109,7 @@ batch-note-updater
 .
 ├── AGENTS.md                  # Codex 项目入口规则
 ├── .env.example               # 环境变量模板
+├── .env.optional.example      # 按需复制的可选配置参考
 ├── .codex/
 │   ├── skills/                # 项目级 Codex skills
 │   ├── workflows/             # 命名工作流定义
@@ -214,6 +203,16 @@ bash templates/prompt-cache-bootstrap.sh --apply --platform both --target /path/
 ```text
 Workflow health check passed.
 ```
+
+## 运行完整校验
+
+提交前可运行：
+
+```bash
+bash tests/run.sh
+```
+
+该命令会执行状态机与平台回归测试、工作流健康检查、严格环境模板检查、Codex/Claude 镜像检查和 Git 历史密钥扫描；GitHub Actions 在 push 和 pull request 上执行同一套校验。
 
 ## 检查环境变量模板
 

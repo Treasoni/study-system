@@ -2,7 +2,7 @@ apiVersion: agents.study-system/v1
 kind: Workflow
 metadata:
   name: legacy-note-import-flow
-  version: 1.0.0
+  version: 1.1.0
   description: "Import, normalize, and optionally refresh legacy notes in recoverable batches."
 spec:
   entrypoint: workflow.md

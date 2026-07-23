@@ -11,7 +11,10 @@
 | `.env.development` | 可共享的开发默认值，不含密钥 | ✅（仅非敏感值） |
 | `.env.production` | 生产环境变量清单，不含密钥 | ✅（仅非敏感值） |
 | `.env.example` | 变量文档/模板 | ✅ |
+| `.env.optional.example` | 可选集成参考，不会自动加载 | ✅ |
 | `.env.*.local` | 环境特定本地覆盖 | ❌ |
+
+本项目的 `.env.example` 只能保留被实际脚本读取的最小变量。可选的路径、发布、模型、供应商和服务配置必须写在 `.env.optional.example`，由用户显式复制到本地 `.env`。
 
 ## Agent 处理流程
 
@@ -88,7 +91,7 @@ DEBUG=true
 FEATURE_X_ENABLED=false
 ```
 
-## .env.example 模板
+## 通用环境变量参考（不直接作为本项目模板）
 
 ```bash
 # === Project Identity ===
@@ -116,7 +119,6 @@ DEBUG=false
 DRY_RUN=false
 AUTO_CONFIRM=false
 CODEX_AUTO_GIT=0
-CODEX_AUTO_GIT_PUSH=0
 
 # === LLM / Research Providers ===
 OPENAI_API_KEY=
