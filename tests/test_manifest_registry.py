@@ -9,7 +9,10 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
-REGISTRY = ROOT / ".codex" / "platform" / "manifest-registry.py"
+REGISTRIES = (
+    ROOT / ".codex" / "platform" / "manifest-registry.py",
+    ROOT / ".codex" / "skills" / "manifest-platform" / "assets" / "platform" / "manifest-registry.py",
+)
 REGISTRY_CONFIG = ROOT / ".codex" / "platform" / "registry.yaml"
 
 
@@ -51,17 +54,19 @@ class ManifestRegistryTests(unittest.TestCase):
                 (skill / "SKILL.md").write_text(f"# {name}\n", encoding="utf-8")
                 (skill / "manifest.yaml").write_text(manifest(name, dependency), encoding="utf-8")
 
-            result = subprocess.run(
-                [sys.executable, str(REGISTRY), "--root", str(project), "validate"],
-                text=True,
-                capture_output=True,
-                check=False,
-            )
+            for registry in REGISTRIES:
+                with self.subTest(registry=registry):
+                    result = subprocess.run(
+                        [sys.executable, str(registry), "--root", str(project), "validate"],
+                        text=True,
+                        capture_output=True,
+                        check=False,
+                    )
 
-        self.assertNotEqual(result.returncode, 0)
-        self.assertIn("dependency cycle", result.stderr)
-        self.assertIn("Skill/alpha", result.stderr)
-        self.assertIn("Skill/beta", result.stderr)
+                    self.assertNotEqual(result.returncode, 0)
+                    self.assertIn("dependency cycle", result.stderr)
+                    self.assertIn("Skill/alpha", result.stderr)
+                    self.assertIn("Skill/beta", result.stderr)
 
 
 if __name__ == "__main__":

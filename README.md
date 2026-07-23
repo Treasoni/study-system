@@ -206,6 +206,18 @@ Workflow health check passed.
 
 ## 检查环境变量模板
 
+## 运行完整校验
+
+提交前可运行：
+
+```bash
+bash tests/run.sh
+```
+
+该命令会执行状态机与平台回归测试、工作流健康检查、严格环境模板检查、Codex/Claude 镜像检查和 Git 历史密钥扫描；GitHub Actions 在 push 和 pull request 上执行同一套校验。
+
+## 检查环境变量模板
+
 更新代码、脚本或工作流后，用环境变量模板检查脚本确认 `.env.example` 是否覆盖了项目真实引用的变量，并检查模板里有没有误放真实密钥。
 
 最常用的命令：
