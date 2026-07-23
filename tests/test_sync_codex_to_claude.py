@@ -12,6 +12,17 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 class CodexClaudeSyncTests(unittest.TestCase):
+    def test_bash_wrapper_is_executable(self) -> None:
+        result = subprocess.run(
+            [str(ROOT / ".codex" / "scripts" / "sync-codex-to-claude.sh"), "--check"],
+            cwd=ROOT,
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+
+        self.assertEqual(result.returncode, 0, result.stderr)
+
     def test_check_reports_and_reconciles_stale_managed_file(self) -> None:
         with tempfile.TemporaryDirectory() as temporary_dir:
             project = Path(temporary_dir)
