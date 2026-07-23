@@ -90,6 +90,31 @@ class CodexClaudeSyncTests(unittest.TestCase):
 
         self.assertEqual(result.returncode, 0, result.stdout)
 
+    def test_check_ignores_macos_metadata(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_dir:
+            project = Path(temporary_dir)
+            shutil.copytree(ROOT / ".codex", project / ".codex")
+            sync_script = project / ".codex" / "scripts" / "sync-codex-to-claude.py"
+            subprocess.run(
+                [sys.executable, str(sync_script)],
+                cwd=project,
+                text=True,
+                capture_output=True,
+                check=True,
+            )
+            metadata_file = project / ".claude" / "rules" / ".DS_Store"
+            metadata_file.write_bytes(b"macOS metadata")
+
+            result = subprocess.run(
+                [sys.executable, str(sync_script), "--check"],
+                cwd=project,
+                text=True,
+                capture_output=True,
+                check=False,
+            )
+
+        self.assertEqual(result.returncode, 0, result.stdout)
+
     def test_check_does_not_follow_managed_destination_symlink(self) -> None:
         with tempfile.TemporaryDirectory() as temporary_dir:
             project = Path(temporary_dir)

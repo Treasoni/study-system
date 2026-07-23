@@ -29,6 +29,7 @@ OMITTED_SOURCE_PATHS = {
     "workflows": set(),
 }
 SYNC_WRAPPER = Path("sync-codex-to-claude.sh")
+IGNORED_PATH_NAMES = {".DS_Store"}
 
 
 def remove_path(path: Path) -> None:
@@ -40,6 +41,10 @@ def remove_path(path: Path) -> None:
 
 def is_excluded(relative_path: Path, exclusions: set[Path]) -> bool:
     return any(relative_path == excluded or excluded in relative_path.parents for excluded in exclusions)
+
+
+def is_ignored_path(relative_path: Path) -> bool:
+    return any(part in IGNORED_PATH_NAMES for part in relative_path.parts)
 
 
 def ensure_directory(path: Path) -> None:
@@ -82,7 +87,11 @@ def reconcile(source: Path, destination: Path, exclusions: set[Path], omitted_so
     desired_paths: set[Path] = set()
     for source_path in sorted(source.rglob("*")):
         relative_path = source_path.relative_to(source)
-        if is_excluded(relative_path, exclusions) or is_excluded(relative_path, omitted_sources):
+        if (
+            is_ignored_path(relative_path)
+            or is_excluded(relative_path, exclusions)
+            or is_excluded(relative_path, omitted_sources)
+        ):
             continue
         desired_paths.add(relative_path)
         destination_path = destination / relative_path
@@ -100,7 +109,7 @@ def reconcile(source: Path, destination: Path, exclusions: set[Path], omitted_so
         return
     for destination_path in sorted(destination.rglob("*"), key=lambda path: len(path.parts), reverse=True):
         relative_path = destination_path.relative_to(destination)
-        if is_excluded(relative_path, exclusions) or relative_path in desired_paths:
+        if is_ignored_path(relative_path) or is_excluded(relative_path, exclusions) or relative_path in desired_paths:
             continue
         if destination_path.is_symlink():
             remove_path(destination_path)
