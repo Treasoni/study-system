@@ -18,6 +18,7 @@ logs/
 *.tmp
 *.temp
 .tmp/
+.worktrees/
 
 # Security audit logs (local only)
 **/security-audit.log
