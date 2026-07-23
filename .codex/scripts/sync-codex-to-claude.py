@@ -20,6 +20,15 @@ EXCLUSIONS = {
     "platform": set(),
     "workflows": set(),
 }
+OMITTED_SOURCE_PATHS = {
+    "skills": set(),
+    "rules": set(),
+    "scripts": {Path("sync-codex-to-claude.py")},
+    "agents": set(),
+    "platform": set(),
+    "workflows": set(),
+}
+SYNC_WRAPPER = Path("sync-codex-to-claude.sh")
 
 
 def remove_path(path: Path) -> None:
@@ -31,6 +40,24 @@ def remove_path(path: Path) -> None:
 
 def is_excluded(relative_path: Path, exclusions: set[Path]) -> bool:
     return any(relative_path == excluded or excluded in relative_path.parents for excluded in exclusions)
+
+
+def ensure_directory(path: Path) -> None:
+    if path.is_symlink() or (path.exists() and not path.is_dir()):
+        remove_path(path)
+    path.mkdir(parents=True, exist_ok=True)
+
+
+def validate_source_tree(codex_root: Path) -> None:
+    for directory in MANAGED_DIRECTORIES:
+        source = codex_root / directory
+        if source.is_symlink():
+            raise ValueError(f"refusing symlinked source directory: {source}")
+        if not source.is_dir():
+            continue
+        for source_path in source.rglob("*"):
+            if source_path.is_symlink():
+                raise ValueError(f"refusing symlinked source path: {source_path}")
 
 
 def transform_text(path: Path) -> None:
@@ -45,25 +72,26 @@ def transform_text(path: Path) -> None:
         path.write_text(transformed, encoding="utf-8")
 
 
-def reconcile(source: Path, destination: Path, exclusions: set[Path]) -> None:
+def reconcile(source: Path, destination: Path, exclusions: set[Path], omitted_sources: set[Path]) -> None:
+    if source.is_symlink():
+        raise ValueError(f"refusing symlinked source directory: {source}")
     if not source.is_dir():
         return
+    ensure_directory(destination)
 
     desired_paths: set[Path] = set()
     for source_path in sorted(source.rglob("*")):
         relative_path = source_path.relative_to(source)
-        if is_excluded(relative_path, exclusions):
+        if is_excluded(relative_path, exclusions) or is_excluded(relative_path, omitted_sources):
             continue
         desired_paths.add(relative_path)
         destination_path = destination / relative_path
         if source_path.is_dir():
-            if destination_path.exists() and not destination_path.is_dir():
-                remove_path(destination_path)
-            destination_path.mkdir(parents=True, exist_ok=True)
+            ensure_directory(destination_path)
             continue
 
-        destination_path.parent.mkdir(parents=True, exist_ok=True)
-        if destination_path.is_dir():
+        ensure_directory(destination_path.parent)
+        if destination_path.is_symlink() or destination_path.is_dir():
             remove_path(destination_path)
         shutil.copy2(source_path, destination_path)
         transform_text(destination_path)
@@ -74,30 +102,58 @@ def reconcile(source: Path, destination: Path, exclusions: set[Path]) -> None:
         relative_path = destination_path.relative_to(destination)
         if is_excluded(relative_path, exclusions) or relative_path in desired_paths:
             continue
+        if destination_path.is_symlink():
+            remove_path(destination_path)
+            continue
         if destination_path.is_dir() and any(destination_path.iterdir()):
             continue
         remove_path(destination_path)
 
 
+def reconcile_sync_wrapper(codex_root: Path, claude_root: Path) -> None:
+    source = codex_root / "scripts" / SYNC_WRAPPER
+    destination = claude_root / "scripts" / SYNC_WRAPPER
+    if source.is_symlink() or not source.is_file():
+        raise ValueError(f"missing canonical sync wrapper: {source}")
+    ensure_directory(destination.parent)
+    if destination.is_symlink() or destination.is_dir():
+        remove_path(destination)
+    shutil.copy2(source, destination)
+
+
 def apply_sync(root: Path) -> None:
     codex_root = root / ".codex"
     claude_root = root / ".claude"
-    claude_root.mkdir(parents=True, exist_ok=True)
+    validate_source_tree(codex_root)
+    ensure_directory(claude_root)
     for directory in MANAGED_DIRECTORIES:
-        reconcile(codex_root / directory, claude_root / directory, EXCLUSIONS[directory])
+        reconcile(
+            codex_root / directory,
+            claude_root / directory,
+            EXCLUSIONS[directory],
+            OMITTED_SOURCE_PATHS[directory],
+        )
+    reconcile_sync_wrapper(codex_root, claude_root)
 
 
 def expected_mirror(root: Path, temporary_root: Path) -> Path:
     expected_root = temporary_root / ".claude"
     actual_root = root / ".claude"
-    if actual_root.exists():
+    if actual_root.exists() and not actual_root.is_symlink():
         shutil.copytree(actual_root, expected_root, symlinks=True)
     else:
         expected_root.mkdir(parents=True)
 
     codex_root = root / ".codex"
+    validate_source_tree(codex_root)
     for directory in MANAGED_DIRECTORIES:
-        reconcile(codex_root / directory, expected_root / directory, EXCLUSIONS[directory])
+        reconcile(
+            codex_root / directory,
+            expected_root / directory,
+            EXCLUSIONS[directory],
+            OMITTED_SOURCE_PATHS[directory],
+        )
+    reconcile_sync_wrapper(codex_root, expected_root)
     return expected_root
 
 
@@ -117,6 +173,8 @@ def tree_entries(root: Path) -> dict[Path, tuple[str, bytes | str | None]]:
 
 
 def differing_paths(expected: Path, actual: Path) -> list[str]:
+    if expected.is_symlink() != actual.is_symlink():
+        return ["different: ."]
     expected_entries = tree_entries(expected)
     actual_entries = tree_entries(actual)
     differences: list[str] = []
@@ -146,14 +204,18 @@ def main() -> int:
         print(f"sync-codex-to-claude: expected .codex under {root}", file=os.sys.stderr)
         return 2
 
-    if not args.check:
-        apply_sync(root)
-        print("Synced portable Codex config to Claude Code config.")
-        return 0
+    try:
+        if not args.check:
+            apply_sync(root)
+            print("Synced portable Codex config to Claude Code config.")
+            return 0
 
-    with tempfile.TemporaryDirectory(prefix="study-system-claude-check.") as temporary_dir:
-        expected = expected_mirror(root, Path(temporary_dir))
-        differences = differing_paths(expected, root / ".claude")
+        with tempfile.TemporaryDirectory(prefix="study-system-claude-check.") as temporary_dir:
+            expected = expected_mirror(root, Path(temporary_dir))
+            differences = differing_paths(expected, root / ".claude")
+    except ValueError as error:
+        print(f"sync-codex-to-claude: {error}", file=os.sys.stderr)
+        return 2
     if differences:
         print("Claude compatibility mirror is stale:")
         for difference in differences:

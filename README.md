@@ -204,8 +204,6 @@ bash templates/prompt-cache-bootstrap.sh --apply --platform both --target /path/
 Workflow health check passed.
 ```
 
-## 检查环境变量模板
-
 ## 运行完整校验
 
 提交前可运行：
