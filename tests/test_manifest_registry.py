@@ -11,13 +11,13 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 REGISTRIES = (
     ROOT / ".codex" / "platform" / "manifest-registry.py",
-    ROOT / ".codex" / "skills" / "manifest-platform" / "assets" / "platform" / "manifest-registry.py",
+    ROOT / ".agents" / "skills" / "manifest-platform" / "assets" / "platform" / "manifest-registry.py",
 )
 REGISTRY_CONFIG = ROOT / ".codex" / "platform" / "registry.yaml"
 
 
 def manifest(name: str, dependency: str) -> str:
-    return f'''apiVersion: agents.study-system/v1
+    return f'''apiVersion: agent-platform/v1
 kind: Skill
 metadata:
   name: {name}
@@ -49,7 +49,7 @@ class ManifestRegistryTests(unittest.TestCase):
             shutil.copy2(REGISTRY_CONFIG, platform / "registry.yaml")
 
             for name, dependency in (("alpha", "Skill/beta"), ("beta", "Skill/alpha")):
-                skill = project / ".codex" / "skills" / name
+                skill = project / ".agents" / "skills" / name
                 skill.mkdir(parents=True)
                 (skill / "SKILL.md").write_text(f"# {name}\n", encoding="utf-8")
                 (skill / "manifest.yaml").write_text(manifest(name, dependency), encoding="utf-8")

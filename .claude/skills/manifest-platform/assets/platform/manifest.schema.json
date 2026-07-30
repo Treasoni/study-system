@@ -1,12 +1,12 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://agents.study-system.dev/schemas/manifest-v1.json",
-  "title": "Study System Agent Platform Manifest",
+  "$id": "https://example.invalid/agent-platform/manifest-v1.json",
+  "title": "Agent Platform Manifest",
   "type": "object",
   "additionalProperties": false,
   "required": ["apiVersion", "kind", "metadata", "spec"],
   "properties": {
-    "apiVersion": { "const": "agents.study-system/v1" },
+    "apiVersion": { "const": "agent-platform/v1" },
     "kind": { "enum": ["Workflow", "Skill", "Subagent", "Hook"] },
     "metadata": {
       "type": "object",

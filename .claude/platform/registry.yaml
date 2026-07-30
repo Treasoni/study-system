@@ -1,4 +1,4 @@
-apiVersion: agents.study-system/v1
+apiVersion: agent-platform/v1
 discovery:
   kindDirectories:
     Workflow: .claude/workflows
@@ -6,6 +6,7 @@ discovery:
     Subagent: .claude/agents
     Hook: .claude/hooks
 policy:
+  hooksConfig: .claude/settings.json
   allowedPermissions:
     filesystem:
       - none

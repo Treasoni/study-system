@@ -5,8 +5,8 @@ ROOT="$(cd "$(dirname "$BASH_SOURCE")/.." && pwd)"
 TEST_ROOT="$(mktemp -d /private/tmp/study-system-hook-test.XXXXXX)"
 trap 'rm -rf "$TEST_ROOT"' EXIT
 
-[ -x "$ROOT/.codex/hooks/post-conversation.sh" ] || {
-  printf 'FAIL: post-conversation hook is not executable\n' >&2
+[ -f "$ROOT/.codex/hooks/post_conversation.py" ] || {
+  printf 'FAIL: post-conversation hook is missing\n' >&2
   exit 1
 }
 
@@ -17,11 +17,10 @@ fail() {
 
 prepare_project() {
   local project="$1"
-  mkdir -p "$project/.codex/hooks" "$project/.codex/scripts" "$project/.codex/skills/security-secret-audit/scripts"
-  cp "$ROOT/.codex/hooks/post-conversation.sh" "$project/.codex/hooks/"
-  cp "$ROOT/.codex/scripts/git-autocommit.sh" "$project/.codex/scripts/"
-  cp "$ROOT/.codex/skills/security-secret-audit/scripts/audit-secrets.sh" "$project/.codex/skills/security-secret-audit/scripts/"
-  cp "$ROOT/.codex/skills/security-secret-audit/scripts/detect-secrets.pl" "$project/.codex/skills/security-secret-audit/scripts/"
+  mkdir -p "$project/.codex/hooks" "$project/.agents/skills/security-secret-audit/scripts"
+  cp "$ROOT/.codex/hooks/post_conversation.py" "$project/.codex/hooks/"
+  cp "$ROOT/.agents/skills/security-secret-audit/scripts/audit-secrets.sh" "$project/.agents/skills/security-secret-audit/scripts/"
+  cp "$ROOT/.agents/skills/security-secret-audit/scripts/detect-secrets.pl" "$project/.agents/skills/security-secret-audit/scripts/"
 
   git -C "$project" init -q
   git -C "$project" config user.name "Hook Test"
@@ -38,7 +37,7 @@ secret_tail="abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz"
 printf 'OPENAI_API_KEY=%s%s\n' "$secret_prefix" "$secret_tail" > "$secret_project/credentials.env"
 before_count="$(git -C "$secret_project" rev-list --count HEAD)"
 set +e
-CODEX_AUTO_GIT=1 bash "$secret_project/.codex/hooks/post-conversation.sh" > "$secret_project/hook.log" 2>&1
+CODEX_AUTO_GIT=1 python3 "$secret_project/.codex/hooks/post_conversation.py" > "$secret_project/hook.log" 2>&1
 hook_status=$?
 set -e
 after_count="$(git -C "$secret_project" rev-list --count HEAD)"
@@ -50,7 +49,7 @@ clean_project="$TEST_ROOT/clean"
 prepare_project "$clean_project"
 printf 'safe change\n' >> "$clean_project/README.md"
 before_count="$(git -C "$clean_project" rev-list --count HEAD)"
-CODEX_AUTO_GIT=1 bash "$clean_project/.codex/hooks/post-conversation.sh" > "$clean_project/hook.log" 2>&1
+CODEX_AUTO_GIT=1 python3 "$clean_project/.codex/hooks/post_conversation.py" > "$clean_project/hook.log" 2>&1
 after_count="$(git -C "$clean_project" rev-list --count HEAD)"
 [ "$after_count" -eq $((before_count + 1)) ] || fail "hook did not commit clean changes"
 

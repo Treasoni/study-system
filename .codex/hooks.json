@@ -5,7 +5,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash -lc 'if [ -x .codex/hooks/post-conversation.sh ]; then exec .codex/hooks/post-conversation.sh; fi; if [ -x hooks/post-conversation.sh ]; then exec hooks/post-conversation.sh; fi; echo \"Study System: post-conversation hook not found\"; exit 0'",
+            "command": "python3 '.codex/hooks/post_conversation.py'",
             "statusMessage": "检查项目状态..."
           }
         ]

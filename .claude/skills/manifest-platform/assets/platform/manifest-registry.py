@@ -11,7 +11,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-API_VERSION = "agents.study-system/v1"
+API_VERSION = "agent-platform/v1"
 KINDS = ("Workflow", "Skill", "Subagent", "Hook")
 PERMISSIONS = ("filesystem", "network", "subprocess", "git")
 NAME_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
@@ -130,8 +130,8 @@ def load_yaml(path: Path) -> dict[str, Any]:
 
 def project_root(raw_root: str) -> Path:
     root = Path(raw_root).resolve()
-    if not (root / ".claude").is_dir():
-        raise ManifestError(f"{root}: expected a project containing .claude/")
+    if not root.is_dir():
+        raise ManifestError(f"{root}: expected an existing project directory")
     return root
 
 
@@ -142,8 +142,21 @@ def relative_to(path: Path, base: Path) -> Path | None:
         return None
 
 
-def load_registry(root: Path) -> dict[str, Any]:
-    path = root / ".claude/platform/registry.yaml"
+def project_relative_path(root: Path, raw_path: str, label: str) -> Path:
+    path = (root / raw_path).resolve()
+    if relative_to(path, root) is None:
+        raise ManifestError(f"registry: {label} escapes the project: {raw_path}")
+    return path
+
+
+def registry_path(root: Path, raw_registry: str | None) -> Path:
+    if raw_registry:
+        raw_path = Path(raw_registry)
+        return raw_path.resolve() if raw_path.is_absolute() else (root / raw_path).resolve()
+    return Path(__file__).resolve().parent / "registry.yaml"
+
+
+def load_registry(path: Path) -> dict[str, Any]:
     if not path.is_file():
         raise ManifestError(f"{path}: registry configuration is missing; run the manifest-platform installer")
     data = load_yaml(path)
@@ -164,9 +177,7 @@ def manifest_paths(root: Path, registry: dict[str, Any]) -> list[tuple[str, Path
         raw_dir = registry["discovery"]["kindDirectories"].get(kind)
         if not isinstance(raw_dir, str):
             raise ManifestError(f"registry: discovery.kindDirectories.{kind} must be a string")
-        base = (root / raw_dir).resolve()
-        if relative_to(base, root) is None:
-            raise ManifestError(f"registry: discovery path escapes the project: {raw_dir}")
+        base = project_relative_path(root, raw_dir, f"discovery.kindDirectories.{kind}")
         if base.exists():
             paths.extend((kind, path) for path in sorted(base.glob("*/manifest.yaml")))
     return paths
@@ -243,8 +254,8 @@ def validate_manifest(root: Path, registry: dict[str, Any], expected_kind: str, 
     require_allowed_keys(spec, "spec", {"entrypoint", "capabilities", "permissions", "dependsOn", "lifecycle", "event"}, path)
     entrypoint = require_string(spec.get("entrypoint"), "spec.entrypoint", path)
     entrypoint_path = (path.parent / entrypoint).resolve()
-    if relative_to(entrypoint_path, (root / ".claude").resolve()) is None:
-        raise ManifestError(f"{path}: spec.entrypoint must remain inside .claude/")
+    if relative_to(entrypoint_path, root) is None:
+        raise ManifestError(f"{path}: spec.entrypoint must remain inside the project root")
     if not entrypoint_path.is_file():
         raise ManifestError(f"{path}: spec.entrypoint does not exist: {entrypoint}")
     capabilities = spec.get("capabilities")
@@ -280,13 +291,30 @@ def validate_manifest(root: Path, registry: dict[str, Any], expected_kind: str, 
     return Artifact(path=path, data=data)
 
 
-def validate_hooks(root: Path, artifacts: list[Artifact]) -> list[str]:
+def hook_config_path(root: Path, registry: dict[str, Any]) -> Path:
+    policy = registry.get("policy")
+    if not isinstance(policy, dict):
+        raise ManifestError("registry: policy must be a mapping")
+    configured = policy.get("hooksConfig")
+    if configured is not None:
+        if not isinstance(configured, str) or not configured:
+            raise ManifestError("registry: policy.hooksConfig must be a non-empty string")
+        return project_relative_path(root, configured, "policy.hooksConfig")
+
+    raw_hook_dir = registry["discovery"]["kindDirectories"].get("Hook")
+    if not isinstance(raw_hook_dir, str):
+        raise ManifestError("registry: discovery.kindDirectories.Hook must be a string")
+    hook_dir = project_relative_path(root, raw_hook_dir, "discovery.kindDirectories.Hook")
+    return hook_dir.parent / "hooks.json"
+
+
+def validate_hooks(root: Path, registry: dict[str, Any], artifacts: list[Artifact]) -> list[str]:
     hook_artifacts = [artifact for artifact in artifacts if artifact.kind == "Hook"]
     if not hook_artifacts:
         return []
-    config_path = root / ".claude/hooks.json"
+    config_path = hook_config_path(root, registry)
     if not config_path.is_file():
-        return [f"{config_path}: Hook manifests exist but hooks.json is missing"]
+        return [f"{config_path}: Hook manifests exist but the hook registration JSON is missing"]
     try:
         hooks = json.loads(config_path.read_text(encoding="utf-8")).get("hooks", {})
     except json.JSONDecodeError as exc:
@@ -295,12 +323,12 @@ def validate_hooks(root: Path, artifacts: list[Artifact]) -> list[str]:
     for artifact in hook_artifacts:
         event = artifact.data["spec"]["event"]
         if not isinstance(hooks.get(event), list):
-            errors.append(f"{artifact.path}: event {event} is not registered in .claude/hooks.json")
+            errors.append(f"{artifact.path}: event {event} is not registered in {config_path.relative_to(root)}")
             continue
         entrypoint = (artifact.path.parent / artifact.data["spec"]["entrypoint"]).resolve()
         entry_rel = entrypoint.relative_to(root).as_posix()
         if entry_rel not in json.dumps(hooks[event], ensure_ascii=False):
-            errors.append(f"{artifact.path}: hooks.json {event} registration does not reference {entry_rel}")
+            errors.append(f"{artifact.path}: {config_path.relative_to(root)} {event} registration does not reference {entry_rel}")
     return errors
 
 
@@ -340,8 +368,7 @@ def dependency_cycle_errors(artifacts: list[Artifact]) -> list[str]:
     return errors
 
 
-def discover_and_validate(root: Path) -> tuple[list[Artifact], list[str]]:
-    registry = load_registry(root)
+def discover_and_validate(root: Path, registry: dict[str, Any]) -> tuple[list[Artifact], list[str]]:
     artifacts: list[Artifact] = []
     errors: list[str] = []
     discovered = manifest_paths(root, registry)
@@ -361,7 +388,7 @@ def discover_and_validate(root: Path) -> tuple[list[Artifact], list[str]]:
             if dependency not in identifiers:
                 errors.append(f"{artifact.path}: unknown dependency {dependency}")
     errors.extend(dependency_cycle_errors(artifacts))
-    errors.extend(validate_hooks(root, artifacts))
+    errors.extend(validate_hooks(root, registry, artifacts))
     return artifacts, errors
 
 
@@ -386,8 +413,7 @@ def scaffold_manifest(kind: str, name: str, entrypoint: str, description: str) -
     )
 
 
-def command_init(root: Path, args: argparse.Namespace) -> int:
-    registry = load_registry(root)
+def command_init(root: Path, registry: dict[str, Any], args: argparse.Namespace) -> int:
     if not NAME_RE.fullmatch(args.name):
         raise ManifestError("--name must be lowercase kebab-case")
     directory = registry["discovery"]["kindDirectories"][args.kind]
@@ -402,7 +428,12 @@ def command_init(root: Path, args: argparse.Namespace) -> int:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Discover and validate unified Agent Platform manifests.")
-    parser.add_argument("--root", default=".", help="Project root containing .claude (default: current directory)")
+    parser.add_argument("--root", default=".", help="Project root (default: current directory)")
+    parser.add_argument(
+        "--registry",
+        default=None,
+        help="Registry YAML path. Defaults to registry.yaml beside this script.",
+    )
     subparsers = parser.add_subparsers(dest="command", required=True)
     subparsers.add_parser("validate", help="Validate all discovered manifests and hook registrations")
     list_parser = subparsers.add_parser("list", help="List discovered artifacts")
@@ -415,9 +446,10 @@ def main() -> int:
     args = parser.parse_args()
     try:
         root = project_root(args.root)
+        registry = load_registry(registry_path(root, args.registry))
         if args.command == "init":
-            return command_init(root, args)
-        artifacts, errors = discover_and_validate(root)
+            return command_init(root, registry, args)
+        artifacts, errors = discover_and_validate(root, registry)
         if args.command == "list":
             if args.json:
                 payload = [artifact.data | {"path": artifact.path.relative_to(root).as_posix(), "id": artifact.identifier} for artifact in artifacts]

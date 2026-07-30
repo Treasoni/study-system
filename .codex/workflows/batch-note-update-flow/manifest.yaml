@@ -1,4 +1,4 @@
-apiVersion: agents.study-system/v1
+apiVersion: agent-platform/v1
 kind: Workflow
 metadata:
   name: batch-note-update-flow

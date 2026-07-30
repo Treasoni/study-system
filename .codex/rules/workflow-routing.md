@@ -1,13 +1,13 @@
 # Workflow Routing
 
-本规则汇总项目内可用工作流，并说明什么时候使用哪个工作流。
+Use this rule file to decide which named workflow to use and where to find active run state.
 
-## Directory Layout
+## Workflow Directory Layout
 
 ```text
-.codex/workflows/{workflow-id}/workflow.md
-.codex/workflows/{workflow-id}/state-template.md
-workspace/workflow-runs/{task}.workflow.md
+.codex/workflows/{workflow-id}/workflow.md        # workflow definition
+.codex/workflows/{workflow-id}/state-template.md # state file template
+workspace/workflow-runs/*.workflow.md                   # active or historical run state
 ```
 
 ## Available Workflows
@@ -22,16 +22,16 @@ workspace/workflow-runs/{task}.workflow.md
 
 ## Routing Rules
 
-- 在任何会修改项目文件、运行项目命令或调用外部服务的操作前，先读取本文件，并根据用户原始请求匹配 `Workflow ID`。
-- 正向触发条件命中且未命中排除条件时，必须选择对应 `workflow_id`；`Required: yes` 不允许改走普通执行路径。
-- 多个工作流同时命中时选择更具体者；仍无法区分时先请求用户确认。
-- 如果 `workspace/workflow-runs/` 中已有匹配状态文件，优先恢复已有运行，不要重复创建。
-- 如果没有状态文件，按对应 workflow 模板创建命名状态文件。
-- 状态文件不要统一命名为 `todo.md`；除非项目只有一个固定工作流。
-- 创建或恢复运行后，读取当前状态文件，并通过 `.codex/scripts/todo-state.sh` 启动当前 phase，才能执行该 phase 的工作。
-- 每阶段开始前必须读取当前状态文件。
-- 阶段状态只能通过 `.codex/scripts/todo-state.sh` 更新。
-- 工作流新增、修改、重命名或删除后，必须运行 `.codex/scripts/sync-workflow-routing.sh`；`--check` 未通过时更新不算完成。
+- Before any action that changes project files, runs project commands, or calls external services, choose the matching `workflow_id` from the table.
+- Match the user's original request against positive triggers and exclusions. A matching `Required: yes` workflow cannot use the ordinary execution path.
+- If multiple workflows match, choose the more specific workflow; if the route remains ambiguous, ask the user before acting.
+- If a matching run already exists under `workspace/workflow-runs/`, resume it instead of creating a duplicate.
+- If no run exists, create a named state file from the workflow's `state-template.md`.
+- Name state files after the task or feature, not `todo.md`, unless the project has exactly one workflow.
+- Every phase must read the active state file before acting.
+- Phase state must be changed only through `.codex/scripts/todo-state.sh`.
+- Each workflow directory must have a `routing.yaml`; it is the source of truth for the generated table above.
+- After creating, changing, renaming, or deleting a workflow, run `.codex/scripts/sync-workflow-routing.sh`. Use `.codex/scripts/sync-workflow-routing.sh --check` in pre-commit or CI.
 
 ## Active Runs
 

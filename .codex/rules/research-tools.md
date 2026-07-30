@@ -1,6 +1,6 @@
 ---
 paths:
-  - ".codex/rules"
+  - ".agents/skills/tool-discovery"
 ---
 
 # 资料收集工具指南

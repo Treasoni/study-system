@@ -4,12 +4,12 @@ set -euo pipefail
 usage() {
   cat <<'USAGE'
 Usage:
-  .codex/scripts/todo-state.sh <workflow-state.md> start P1
-  .codex/scripts/todo-state.sh <workflow-state.md> confirm P1 "user approval"
-  .codex/scripts/todo-state.sh <workflow-state.md> complete P1
-  .codex/scripts/todo-state.sh <workflow-state.md> skip P3 "reason"
-  .codex/scripts/todo-state.sh <workflow-state.md> block P2 "reason"
-  .codex/scripts/todo-state.sh <workflow-state.md> mode P2 freeform "reason"
+  <agent-dir>/scripts/todo-state.sh <workflow-state.md> start P1
+  <agent-dir>/scripts/todo-state.sh <workflow-state.md> confirm P1 "user approval"
+  <agent-dir>/scripts/todo-state.sh <workflow-state.md> complete P1
+  <agent-dir>/scripts/todo-state.sh <workflow-state.md> skip P3 "reason"
+  <agent-dir>/scripts/todo-state.sh <workflow-state.md> block P2 "reason"
+  <agent-dir>/scripts/todo-state.sh <workflow-state.md> mode P2 freeform "reason"
 
 Enforces confirmed phase completion, bounded skips, and configured mode changes.
 USAGE
@@ -165,19 +165,12 @@ phase_has_status() {
 frontmatter_value() {
   local key="$1"
   awk -v key="$key" '
-    $0 == "---" {
-      if (seen) exit
-      seen = 1
-      next
-    }
+    $0 == "---" { if (seen) exit; seen = 1; next }
     seen && index($0, key ":") == 1 {
       value = substr($0, length(key) + 2)
       sub(/^[[:space:]]+/, "", value)
       sub(/[[:space:]]+$/, "", value)
-      if (value ~ /^".*"$/) {
-        sub(/^"/, "", value)
-        sub(/"$/, "", value)
-      }
+      if (value ~ /^".*"$/) { sub(/^"/, "", value); sub(/"$/, "", value) }
       print value
       exit
     }
@@ -185,19 +178,12 @@ frontmatter_value() {
 }
 
 csv_contains() {
-  local values="$1"
-  local value="$2"
-  case ",$values," in
-    *",$value,"*) return 0 ;;
-    *) return 1 ;;
-  esac
+  case ",$1," in *",$2,"*) return 0 ;; *) return 1 ;; esac
 }
 
 require_nonempty_reason() {
-  local action="$1"
-  local reason="$2"
-  if [ -z "$reason" ]; then
-    echo "todo-state: $action requires a non-empty reason" >&2
+  if [ -z "$2" ]; then
+    echo "todo-state: $1 requires a non-empty reason" >&2
     exit 1
   fi
 }
@@ -210,25 +196,15 @@ require_phase_in_progress() {
 }
 
 append_table_row() {
-  local heading="$1"
-  local row="$2"
-  local tmp
-
+  local heading="$1" row="$2" tmp
   if ! grep -qF "$heading" "$TODO_FILE"; then
     echo "todo-state: missing audit table: $heading" >&2
     exit 1
   fi
-
   tmp="$(mktemp "$TODO_FILE.XXXXXX")"
   if ! awk -v heading="$heading" -v row="$row" '
     $0 == heading { print; in_section = 1; next }
-    in_section && /^\|[-:| ]+\|$/ {
-      print
-      print row
-      in_section = 0
-      inserted = 1
-      next
-    }
+    in_section && /^\|[-:| ]+\|$/ { print; print row; in_section = 0; inserted = 1; next }
     { print }
     END { if (!inserted) exit 3 }
   ' "$TODO_FILE" > "$tmp"; then
@@ -246,12 +222,7 @@ append_confirmation() {
     echo "todo-state: phase is already confirmed: $PHASE" >&2
     exit 1
   fi
-
-  if [ -n "$confirmed" ]; then
-    confirmed="$confirmed,$PHASE"
-  else
-    confirmed="$PHASE"
-  fi
+  if [ -n "$confirmed" ]; then confirmed="$confirmed,$PHASE"; else confirmed="$PHASE"; fi
   set_frontmatter_key "confirmed_phases" "$(yaml_quote "$confirmed")"
   append_table_row "## 用户确认记录" "| $PHASE | $REASON | $NOW |"
   set_frontmatter_key "last_updated" "$(yaml_quote "$TODAY")"
@@ -263,30 +234,15 @@ append_skip_record() {
 }
 
 require_skippable_phase() {
-  local always_skippable
-  local mode_skippable
-  local current_mode
-
-  always_skippable="$(frontmatter_value skippable_phases)"
-  if csv_contains "$always_skippable" "$PHASE"; then
-    return
-  fi
-
-  mode_skippable="$(frontmatter_value mode_dependent_skips)"
-  current_mode="$(frontmatter_value mode)"
-  if csv_contains "$mode_skippable" "$PHASE" && [ "$current_mode" = "freeform" ]; then
-    return
-  fi
-
+  if csv_contains "$(frontmatter_value skippable_phases)" "$PHASE"; then return; fi
+  if csv_contains "$(frontmatter_value mode_dependent_skips)" "$PHASE" && [ "$(frontmatter_value mode)" = "freeform" ]; then return; fi
   echo "todo-state: phase is not skippable in the current workflow mode: $PHASE" >&2
   exit 1
 }
 
 append_mode_record() {
-  local old_mode="$1"
-  local new_mode="$2"
   if grep -qF "## 方向调整记录" "$TODO_FILE"; then
-    append_table_row "## 方向调整记录" "| $NOW | $old_mode | $new_mode | $REASON |"
+    append_table_row "## 方向调整记录" "| $NOW | $1 | $2 | $REASON |"
   fi
 }
 

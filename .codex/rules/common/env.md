@@ -1,4 +1,9 @@
 # Environment Variables (.env) 规范
+---
+paths:
+  - ".codex/scripts/check-env-template.sh"
+---
+
 
 本规则用于让 agent 主动根据当前项目生成、更新和审计环境变量模板。默认目标是“最小必要、可解释、可复制、安全”，而不是把所有可能用到的服务都塞进 `.env.example`。
 
@@ -11,10 +16,7 @@
 | `.env.development` | 可共享的开发默认值，不含密钥 | ✅（仅非敏感值） |
 | `.env.production` | 生产环境变量清单，不含密钥 | ✅（仅非敏感值） |
 | `.env.example` | 变量文档/模板 | ✅ |
-| `.env.optional.example` | 可选集成参考，不会自动加载 | ✅ |
 | `.env.*.local` | 环境特定本地覆盖 | ❌ |
-
-本项目的 `.env.example` 只能保留被实际脚本读取的最小变量。可选的路径、发布、模型、供应商和服务配置必须写在 `.env.optional.example`，由用户显式复制到本地 `.env`。
 
 ## Agent 处理流程
 
@@ -30,7 +32,7 @@
 4. **只保留项目需要的变量**：代码或工作流没有用到的服务变量不要默认加入；可选集成放到明确的 Optional 区块，并保持空值。
 5. **标注必填与来源**：必填变量用注释说明用途和获取来源；敏感变量只放空值或 `your-...-here`，禁止示例真实格式过于接近可用密钥。
 6. **路径自适应**：所有项目内路径默认相对项目根目录；只有用户明确要发布到外部目录时，才允许在本地 `.env` 写绝对路径。
-7. **同步规则**：如果修改 `.codex/rules/**`、`.codex/skills/**`、`.codex/agents/**` 或 `.codex/scripts/**`，按项目规则运行 `.codex/scripts/sync-codex-to-claude.sh`。
+7. **同步规则**：如果修改 agent 专属规则、skills 或检查脚本，按项目既有的同步与验证规则执行。
 
 推荐扫描命令：
 
@@ -60,7 +62,7 @@ rg -n --hidden \
 
 ## 路径规范
 
-1. **禁止**在代码中硬编码绝对路径（如 `/Users/xxx/data/`、`C:\Users\xxx\`）
+1. **禁止**在代码中硬编码绝对路径（如 `<home>/data/`、`<drive>:\\data\\`）
 2. **文件路径**应通过 `.env` 中的环境变量定义，使用相对路径（如 `./workspace`）
 3. **示例**：路径变量统一在 `.env` 中管理，代码中通过 `process.env.WORKSPACE_PATH` + `path.resolve()` 引用
 4. **自动配置**：运行项目时，路径基于当前工作目录自动解析，无需手动设置绝对路径
@@ -91,7 +93,7 @@ DEBUG=true
 FEATURE_X_ENABLED=false
 ```
 
-## 通用环境变量参考（不直接作为本项目模板）
+## .env.example 模板
 
 ```bash
 # === Project Identity ===
@@ -119,6 +121,7 @@ DEBUG=false
 DRY_RUN=false
 AUTO_CONFIRM=false
 CODEX_AUTO_GIT=0
+CODEX_AUTO_GIT_PUSH=0
 
 # === LLM / Research Providers ===
 OPENAI_API_KEY=

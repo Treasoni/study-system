@@ -1,11 +1,12 @@
-apiVersion: agents.study-system/v1
+apiVersion: agent-platform/v1
 discovery:
   kindDirectories:
-    Workflow: .claude/workflows
-    Skill: .claude/skills
-    Subagent: .claude/agents
-    Hook: .claude/hooks
+    Workflow: .codex/workflows
+    Skill: .agents/skills
+    Subagent: .codex/agents
+    Hook: .codex/hooks
 policy:
+  hooksConfig: .codex/hooks.json
   allowedPermissions:
     filesystem:
       - none

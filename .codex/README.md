@@ -22,7 +22,7 @@ Codex 运行时应写本项目 `.codex/` 或学习项目工作区，不写 `.cla
 
 本项目 hooks 只在 `.codex/hooks.json` 中注册：
 
-- `Stop` -> `.codex/hooks/post-conversation.sh`
+- `Stop` -> `.codex/hooks/post_conversation.py`
 
 默认 Stop hook 只报告检测到的项目改动，不提交也不推送。设置 `CODEX_AUTO_GIT=1` 才会在工作区和暂存区密钥扫描通过后执行 `git add -A` 和自动提交；推送始终需要人工执行。
 

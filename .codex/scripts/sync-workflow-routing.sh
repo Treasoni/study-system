@@ -1,152 +1,241 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-usage() {
-  cat <<'USAGE'
-Usage:
-  .codex/scripts/sync-workflow-routing.sh [--check]
-
-Generate the managed Available Workflows table in
-.codex/rules/workflow-routing.md from .codex/workflows/*/routing.yaml.
-
-Options:
-  --check    Do not write files. Exit non-zero when the generated routing block is stale.
-USAGE
-}
-
-MODE="write"
-case "${1:-}" in
-  "") ;;
-  --check) MODE="check" ;;
-  -h|--help) usage; exit 0 ;;
-  *)
-    echo "sync-workflow-routing: unknown option: $1" >&2
-    usage >&2
-    exit 2
-    ;;
-esac
-
-PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
-WORKFLOWS_DIR="${PROJECT_ROOT}/.codex/workflows"
-ROUTING_FILE="${PROJECT_ROOT}/.codex/rules/workflow-routing.md"
+MODE="apply"
+ROOT_DIR=""
+AGENT_DIR=""
+WORKFLOWS_DIR=""
+RULES_DIR=""
+DEFAULT_WORKFLOWS_DIR=".codex/workflows"
+DEFAULT_RULES_DIR=".codex/rules"
 START_MARKER="<!-- workflow-routing:generated:start -->"
 END_MARKER="<!-- workflow-routing:generated:end -->"
 
+usage() {
+  cat <<'USAGE'
+Usage:
+  sync-workflow-routing.sh [--check] [--root DIR] [--agent-dir DIR] [--workflows-dir DIR] [--rules-dir DIR]
+
+Options:
+  --check          Fail if workflow-routing.md is stale instead of updating it.
+  --root DIR       Project root. Defaults to the parent of the installed agent dir.
+  --agent-dir DIR  Agent configuration directory (default: inferred from script path).
+  --workflows-dir DIR  Workflow definition directory, relative to the project root.
+  --rules-dir DIR  Rule directory containing workflow-routing.md, relative to the project root.
+  --help           Show this help message.
+USAGE
+}
+
+warn() {
+  printf '%s\n' "sync-workflow-routing: $*" >&2
+}
+
+is_python3() {
+  "$1" -c 'import sys; raise SystemExit(0 if sys.version_info[0] == 3 else 1)' >/dev/null 2>&1
+}
+
+find_python() {
+  if [ -n "${PYTHON:-}" ] && is_python3 "$PYTHON"; then
+    printf '%s\n' "$PYTHON"
+    return 0
+  fi
+  if command -v python3 >/dev/null 2>&1 && is_python3 python3; then
+    printf '%s\n' python3
+    return 0
+  fi
+  if command -v python >/dev/null 2>&1 && is_python3 python; then
+    printf '%s\n' python
+    return 0
+  fi
+  return 1
+}
+
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    --check)
+      MODE="check"
+      ;;
+    --root)
+      if [ "$#" -lt 2 ]; then
+        warn "--root requires a directory"
+        exit 2
+      fi
+      ROOT_DIR="$2"
+      shift
+      ;;
+    --agent-dir)
+      if [ "$#" -lt 2 ]; then
+        warn "--agent-dir requires a directory"
+        exit 2
+      fi
+      AGENT_DIR="${2%/}"
+      shift
+      ;;
+    --workflows-dir)
+      if [ "$#" -lt 2 ]; then
+        warn "--workflows-dir requires a directory"
+        exit 2
+      fi
+      WORKFLOWS_DIR="${2%/}"
+      shift
+      ;;
+    --rules-dir)
+      if [ "$#" -lt 2 ]; then
+        warn "--rules-dir requires a directory"
+        exit 2
+      fi
+      RULES_DIR="${2%/}"
+      shift
+      ;;
+    --help|-h)
+      usage
+      exit 0
+      ;;
+    *)
+      warn "unknown option: $1"
+      usage >&2
+      exit 2
+      ;;
+  esac
+  shift
+done
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+if [ -z "$ROOT_DIR" ] || [ -z "$AGENT_DIR" ]; then
+  AGENT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+  INFERRED_ROOT="$(cd "$AGENT_ROOT/.." && pwd)"
+  if [ -z "$ROOT_DIR" ]; then
+    ROOT_DIR="$INFERRED_ROOT"
+  fi
+  if [ -z "$AGENT_DIR" ]; then
+    AGENT_DIR="${AGENT_ROOT#"$INFERRED_ROOT"/}"
+  fi
+fi
+
+if [ ! -d "$ROOT_DIR" ]; then
+  warn "project root not found: $ROOT_DIR"
+  exit 1
+fi
+
+ROOT_DIR="$(cd "$ROOT_DIR" && pwd)"
+AGENT_DIR="${AGENT_DIR%/}"
+if [ "$DEFAULT_WORKFLOWS_DIR" = "__DEFAULT_WORKFLOWS_DIR__" ]; then
+  DEFAULT_WORKFLOWS_DIR=""
+fi
+if [ "$DEFAULT_RULES_DIR" = "__DEFAULT_RULES_DIR__" ]; then
+  DEFAULT_RULES_DIR=""
+fi
+WORKFLOWS_DIR="${WORKFLOWS_DIR:-${DEFAULT_WORKFLOWS_DIR:-${AGENT_DIR}/workflows}}"
+RULES_DIR="${RULES_DIR:-${DEFAULT_RULES_DIR:-${AGENT_DIR}/rules}}"
+WORKFLOWS_PATH="$ROOT_DIR/$WORKFLOWS_DIR"
+ROUTING_FILE="$ROOT_DIR/$RULES_DIR/workflow-routing.md"
+
 if [ ! -f "$ROUTING_FILE" ]; then
-  echo "sync-workflow-routing: routing file not found: $ROUTING_FILE" >&2
+  warn "routing file not found: $ROUTING_FILE"
   exit 1
 fi
 
-if [ "$(grep -cF "$START_MARKER" "$ROUTING_FILE")" -ne 1 ] || [ "$(grep -cF "$END_MARKER" "$ROUTING_FILE")" -ne 1 ]; then
-  echo "sync-workflow-routing: routing file must contain exactly one generated marker pair" >&2
+PYTHON_BIN="$(find_python)" || {
+  warn "Python 3 is required (python3 or python)"
   exit 1
-fi
+}
 
-read_scalar() {
+yaml_value() {
   local file="$1"
   local key="$2"
-  local value
-  value="$(awk -v key="$key" '
-    index($0, key ":") == 1 {
-      value = substr($0, length(key) + 2)
-      sub(/^[[:space:]]+/, "", value)
-      sub(/[[:space:]]+$/, "", value)
-      print value
+  awk -v key="$key" '
+    $0 ~ "^[[:space:]]*" key "[[:space:]]*:" {
+      sub("^[[:space:]]*" key "[[:space:]]*:[[:space:]]*", "")
+      gsub(/^[\"\047]|[\"\047]$/, "")
+      print
       exit
     }
-  ' "$file")"
-  value="${value#\"}"
-  value="${value%\"}"
-  value="${value#\'}"
-  value="${value%\'}"
+  ' "$file"
+}
+
+escape_md() {
+  local value="$1"
+  value="${value//|/\\|}"
   printf '%s' "$value"
 }
 
-require_scalar() {
-  local file="$1"
-  local key="$2"
-  local value
-  value="$(read_scalar "$file" "$key")"
-  if [ -z "$value" ]; then
-    echo "sync-workflow-routing: missing ${key} in ${file}" >&2
-    exit 1
-  fi
-  if [[ "$value" == *"|"* ]] || [[ "$value" == *$'\n'* ]]; then
-    echo "sync-workflow-routing: ${key} in ${file} cannot contain a Markdown table separator" >&2
-    exit 1
-  fi
-  printf '%s' "$value"
+normalize_required() {
+  case "$(printf '%s' "$1" | tr '[:upper:]' '[:lower:]')" in
+    true|yes|y|1|required) printf 'yes' ;;
+    *) printf 'no' ;;
+  esac
 }
 
-render_generated_block() {
-  printf '%s\n' "$START_MARKER"
+generate_table() {
+  local workflow_dir routing_file workflow_id required when_to_use triggers excludes state_file_pattern definition
+
   printf '%s\n' '| Workflow ID | Required | When To Use | Positive Triggers | Excludes | Definition | State File Pattern |'
   printf '%s\n' '| --- | --- | --- | --- | --- | --- | --- |'
 
-  if [ -d "$WORKFLOWS_DIR" ]; then
-    find "$WORKFLOWS_DIR" -mindepth 2 -maxdepth 2 -name routing.yaml -type f -print | sort | while IFS= read -r metadata; do
-      workflow_dir="$(dirname "$metadata")"
-      directory_id="$(basename "$workflow_dir")"
-      workflow_id="$(require_scalar "$metadata" workflow_id)"
-      required="$(require_scalar "$metadata" required)"
-      when_to_use="$(require_scalar "$metadata" when_to_use)"
-      triggers="$(require_scalar "$metadata" triggers)"
-      excludes="$(require_scalar "$metadata" excludes)"
-      state_file_pattern="$(require_scalar "$metadata" state_file_pattern)"
-
-      if [ "$workflow_id" != "$directory_id" ]; then
-        echo "sync-workflow-routing: workflow_id ${workflow_id} does not match directory ${directory_id}" >&2
-        exit 1
-      fi
-      if [ "$required" != "true" ] && [ "$required" != "false" ]; then
-        echo "sync-workflow-routing: required in ${metadata} must be true or false" >&2
-        exit 1
-      fi
-      if [ ! -f "${workflow_dir}/workflow.md" ] || [ ! -f "${workflow_dir}/state-template.md" ]; then
-        echo "sync-workflow-routing: ${workflow_dir} must contain workflow.md and state-template.md" >&2
-        exit 1
-      fi
-
-      required_label="no"
-      if [ "$required" = "true" ]; then
-        required_label="yes"
-      fi
-      printf '| `%s` | %s | %s | %s | %s | `.codex/workflows/%s/workflow.md` | `%s` |\n' \
-        "$workflow_id" "$required_label" "$when_to_use" "$triggers" "$excludes" "$workflow_id" "$state_file_pattern"
-    done
+  if [ ! -d "$WORKFLOWS_PATH" ]; then
+    return
   fi
 
-  printf '%s\n' "$END_MARKER"
+  for workflow_dir in "$WORKFLOWS_PATH"/*; do
+    [ -d "$workflow_dir" ] || continue
+    routing_file="$workflow_dir/routing.yaml"
+    [ -f "$routing_file" ] || continue
+
+    workflow_id="$(yaml_value "$routing_file" "workflow_id")"
+    if [ -z "$workflow_id" ]; then
+      workflow_id="$(basename "$workflow_dir")"
+    fi
+    required="$(normalize_required "$(yaml_value "$routing_file" "required")")"
+    when_to_use="$(yaml_value "$routing_file" "when_to_use")"
+    triggers="$(yaml_value "$routing_file" "triggers")"
+    excludes="$(yaml_value "$routing_file" "excludes")"
+    state_file_pattern="$(yaml_value "$routing_file" "state_file_pattern")"
+    definition="${WORKFLOWS_DIR}/${workflow_id}/workflow.md"
+
+    printf '| `%s` | %s | %s | %s | %s | `%s` | `%s` |\n' \
+      "$(escape_md "$workflow_id")" \
+      "$(escape_md "$required")" \
+      "$(escape_md "$when_to_use")" \
+      "$(escape_md "$triggers")" \
+      "$(escape_md "$excludes")" \
+      "$(escape_md "$definition")" \
+      "$(escape_md "$state_file_pattern")"
+  done
 }
 
-EXPECTED_BLOCK="$(render_generated_block)"
-ACTUAL_BLOCK="$(sed -n "/^${START_MARKER}$/,/^${END_MARKER}$/p" "$ROUTING_FILE")"
+GENERATED_TABLE="$(generate_table)"
+export MODE ROUTING_FILE START_MARKER END_MARKER GENERATED_TABLE
 
-if [ "$EXPECTED_BLOCK" = "$ACTUAL_BLOCK" ]; then
-  echo "workflow routing is up to date"
-  exit 0
-fi
+"$PYTHON_BIN" - <<'PY'
+from __future__ import annotations
 
-if [ "$MODE" = "check" ]; then
-  echo "workflow routing is stale; run .codex/scripts/sync-workflow-routing.sh" >&2
-  exit 1
-fi
+import os
+import sys
+from pathlib import Path
 
-GENERATED_BLOCK="$EXPECTED_BLOCK" awk -v start="$START_MARKER" -v end="$END_MARKER" '
-  BEGIN {
-    generated = ENVIRON["GENERATED_BLOCK"] "\n"
-  }
-  $0 == start {
-    printf "%s", generated
-    in_generated = 1
-    next
-  }
-  $0 == end && in_generated {
-    in_generated = 0
-    next
-  }
-  !in_generated { print }
-' "$ROUTING_FILE" > "${ROUTING_FILE}.tmp"
+mode = os.environ["MODE"]
+routing_file = Path(os.environ["ROUTING_FILE"])
+start = os.environ["START_MARKER"]
+end = os.environ["END_MARKER"]
+generated_table = os.environ["GENERATED_TABLE"]
 
-mv "${ROUTING_FILE}.tmp" "$ROUTING_FILE"
-echo "updated: ${ROUTING_FILE}"
+text = routing_file.read_text(encoding="utf-8")
+if start not in text or end not in text:
+    print(f"sync-workflow-routing: missing generated markers in {routing_file}", file=sys.stderr)
+    sys.exit(1)
+
+before, rest = text.split(start, 1)
+_, after = rest.split(end, 1)
+replacement = f"{start}\n{generated_table}\n{end}"
+new_text = before + replacement + after
+
+if mode == "check":
+    if new_text != text:
+        print(f"sync-workflow-routing: stale routing table: {routing_file}", file=sys.stderr)
+        sys.exit(1)
+    print(f"sync-workflow-routing: up to date: {routing_file}")
+else:
+    routing_file.write_text(new_text, encoding="utf-8")
+    print(f"sync-workflow-routing: updated: {routing_file}")
+PY

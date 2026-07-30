@@ -59,13 +59,20 @@ missing_vars_file="${TMP_DIR}/missing-vars.txt"
 unused_vars_file="${TMP_DIR}/unused-vars.txt"
 secret_findings_file="${TMP_DIR}/secret-findings.txt"
 ignored_vars_file="${TMP_DIR}/ignored-vars.txt"
+assigned_vars_file="${TMP_DIR}/assigned-vars.txt"
+self_referenced_vars_file="${TMP_DIR}/self-referenced-vars.txt"
 
 cat > "$ignored_vars_file" <<'EOF'
 BASH_SOURCE
+AGENT_DIR
+CUSTOM_AGENTS
 END_MARKER
+ENTRY_FILE
 GENERATED_BLOCK
+GENERATED_TABLE
 HOME
 LABEL
+MODE
 NOW
 OLDPWD
 PATH
@@ -74,17 +81,19 @@ PHASE_NUM
 PROJECT_DIR
 PROJECT_ROOT
 PROJECT_SLUG
-PROMPT_CACHE_ASSET_DIR
+PYTHON
 PWD
 REASON
 ROOT
 ROUTING_FILE
+RULES_DIR
 RUNS_DIR
 RUN_ID
 RUN_STATE_FILE
 SCRIPT_DIR
 SHELL
 SKILL_DIR
+SKILLS_DIR
 STAMP
 START_MARKER
 TARGET_PROJECT
@@ -97,7 +106,73 @@ USER
 WORKFLOW_DIR
 WORKFLOW_ID
 WORKFLOW_STATE_FILE
+WORKFLOWS_DIR
 EOF
+
+# Shell scripts commonly use uppercase local variables. They are not part of
+# the project's environment contract merely because they appear in shell expansion.
+# Treat names assigned in scanned files as implementation details; values that
+# are only read from the environment remain in the referenced-variable set.
+rg -n --hidden --no-heading \
+  -g '!.git/**' \
+  -g '!.claude/**' \
+  -g '!.codebuddy/**' \
+  -g '!.agents/**' \
+  -g '!.agent-sync/**' \
+  -g '!tests/**' \
+  -g '!docs/**' \
+  -g '!node_modules/**' \
+  -g '!dist/**' \
+  -g '!build/**' \
+  -g '!.next/**' \
+  -g '!coverage/**' \
+  -g '!workspace/**' \
+  -g '!README.md' \
+  -g '!**/.env' \
+  -g '!**/.env.*' \
+  -g '!**/.env.example' \
+  -g '!**/.codex/rules/common/env.md' \
+  -g '!templates/env/**' \
+  '^[[:space:]]*(local[[:space:]]+)?[A-Z][A-Z0-9_]*[[:space:]]*=' \
+  "$PROJECT_ROOT" \
+  | perl -ne 's/^[^:]*:\d+://; print "$1\n" if /^[[:space:]]*(?:local[[:space:]]+)?([A-Z][A-Z0-9_]*)[[:space:]]*=/;' \
+  | sort -u > "$assigned_vars_file" || true
+
+# A default assignment such as WORKSPACE_PATH="${WORKSPACE_PATH:-./workspace}"
+# reads an environment value before setting the local shell variable. Keep that
+# name in the reference set instead of treating it as an implementation detail.
+rg -n --hidden --no-heading \
+  -g '!.git/**' \
+  -g '!.claude/**' \
+  -g '!.codebuddy/**' \
+  -g '!.agents/**' \
+  -g '!.agent-sync/**' \
+  -g '!tests/**' \
+  -g '!docs/**' \
+  -g '!node_modules/**' \
+  -g '!dist/**' \
+  -g '!build/**' \
+  -g '!.next/**' \
+  -g '!coverage/**' \
+  -g '!workspace/**' \
+  -g '!README.md' \
+  -g '!**/.env' \
+  -g '!**/.env.*' \
+  -g '!**/.env.example' \
+  -g '!**/.codex/rules/common/env.md' \
+  -g '!templates/env/**' \
+  '^[[:space:]]*(local[[:space:]]+)?[A-Z][A-Z0-9_]*[[:space:]]*=' \
+  "$PROJECT_ROOT" \
+  | perl -ne '
+      s/^[^:]*:\d+://;
+      if (/^[[:space:]]*(?:local[[:space:]]+)?([A-Z][A-Z0-9_]*)[[:space:]]*=[[:space:]]*(.*)$/) {
+        my ($name, $value) = ($1, $2);
+        print "$name\n" if $value =~ /\$\{\Q$name\E(?:[:-]|\})/;
+      }
+    ' \
+  | sort -u > "$self_referenced_vars_file" || true
+comm -23 "$assigned_vars_file" "$self_referenced_vars_file" >> "$ignored_vars_file"
+sort -u -o "$ignored_vars_file" "$ignored_vars_file"
 
 awk '
   /^[[:space:]]*#/ || /^[[:space:]]*$/ { next }
@@ -116,7 +191,6 @@ extract_vars() {
     while (/os\.getenv\(['\''"]([A-Z][A-Z0-9_]*)['\''"]/g) { print "$1\n" }
     while (/os\.environ(?:\.get)?\(['\''"]([A-Z][A-Z0-9_]*)['\''"]/g) { print "$1\n" }
     while (/os\.environ\[['\''"]([A-Z][A-Z0-9_]*)['\''"]\]/g) { print "$1\n" }
-    while (/\bprintenv[[:space:]]+([A-Z][A-Z0-9_]*)/g) { print "$1\n" }
     while (/\$\{([A-Z][A-Z0-9_]*)(?::-[^}]*)?\}/g) { print "$1\n" }
     while (/\b([A-Z][A-Z0-9_]*(?:_API_KEY|_TOKEN|_SECRET|_PASSWORD|_DSN|_URL|_PATH|_MODEL|_PROVIDER|_ENABLED|_ENV|_PORT))\b/g) { print "$1\n" }
   '
@@ -125,19 +199,24 @@ extract_vars() {
 rg -n --hidden --no-heading \
   -g '!.git/**' \
   -g '!.claude/**' \
+  -g '!.codebuddy/**' \
+  -g '!.agents/**' \
+  -g '!.agent-sync/**' \
+  -g '!tests/**' \
+  -g '!docs/**' \
   -g '!node_modules/**' \
   -g '!dist/**' \
   -g '!build/**' \
   -g '!.next/**' \
   -g '!coverage/**' \
-  -g '!tests/**' \
   -g '!workspace/**' \
   -g '!README.md' \
-  -g '!.env' \
-  -g '!.env.*' \
-  -g '!.env.example' \
-  -g '!.codex/rules/common/env.md' \
-  'process\.env|import\.meta\.env|os\.getenv|os\.environ|printenv[[:space:]]+[A-Z][A-Z0-9_]*|\$\{[A-Z][A-Z0-9_]*|[A-Z][A-Z0-9_]*(?:_API_KEY|_TOKEN|_SECRET|_PASSWORD|_DSN|_URL|_PATH|_MODEL|_PROVIDER|_ENABLED|_ENV|_PORT)' \
+  -g '!**/.env' \
+  -g '!**/.env.*' \
+  -g '!**/.env.example' \
+  -g '!**/.codex/rules/common/env.md' \
+  -g '!templates/env/**' \
+  'process\.env|import\.meta\.env|os\.getenv|os\.environ|\$\{[A-Z][A-Z0-9_]*|[A-Z][A-Z0-9_]*(?:_API_KEY|_TOKEN|_SECRET|_PASSWORD|_DSN|_URL|_PATH|_MODEL|_PROVIDER|_ENABLED|_ENV|_PORT)' \
   "$PROJECT_ROOT" \
   | extract_vars \
   | grep -Fvx -f "$ignored_vars_file" \

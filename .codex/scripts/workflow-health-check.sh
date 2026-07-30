@@ -5,17 +5,7 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "$ROOT"
 
 this_dir=".codex"
-codex_dir=".co""dex"
-claude_dir=".$(printf '%s' "claude")"
-other_dir="$claude_dir"
-if [ "$this_dir" = "$claude_dir" ]; then
-  other_dir="$codex_dir"
-fi
-
-other_skill_pattern='\.claude/skills'
-if [ "$other_dir" = "$codex_dir" ]; then
-  other_skill_pattern='\.co'"dex"'/skills'
-fi
+skills_dir=".agents/skills"
 
 status=0
 
@@ -31,7 +21,7 @@ run_forbidden_rg() {
 
   local tmp
   tmp="$(mktemp "${TMPDIR:-/tmp}/workflow-health.XXXXXX")"
-  if rg -n --hidden -g '!.git/**' -g "!${other_dir}/**" -g '!workspace/**' "$pattern" "$@" > "$tmp"; then
+  if rg -n --hidden -g '!.git/**' -g '!workspace/**' "$pattern" "$@" > "$tmp"; then
     printf '\n%s\n' "$label" >&2
     cat "$tmp" >&2
     fail "$label"
@@ -45,28 +35,23 @@ run_forbidden_rg \
   "Project-scoped todo.md references in active workflow instructions:" \
   '\$\{PROJECT_DIR\}/todo\.md|\$PROJECT_DIR/todo\.md' \
   "$this_dir/agents" \
-  "$this_dir/skills/research-collector" \
-  "$this_dir/skills/note-beautifier" \
-  "$this_dir/skills/workflow-orchestrator" \
+  "$skills_dir/research-collector" \
+  "$skills_dir/note-beautifier" \
+  "$skills_dir/workflow-orchestrator" \
   "$this_dir/workflows"
 
 run_forbidden_rg \
   "Manual phase-status sed edits in active workflow instructions:" \
   'sed -i .*\[P[0-9]' \
   "$this_dir/agents" \
-  "$this_dir/skills/research-collector" \
-  "$this_dir/skills/note-beautifier" \
-  "$this_dir/skills/workflow-orchestrator" \
+  "$skills_dir/research-collector" \
+  "$skills_dir/note-beautifier" \
+  "$skills_dir/workflow-orchestrator" \
   "$this_dir/workflows"
 
-run_forbidden_rg \
-  "Skill docs must not point to the other assistant namespace:" \
-  "$other_skill_pattern" \
-  "$this_dir/skills"
-
-if [ -d "$this_dir/skills/workflow-orchestrator/templates" ] &&
-  find "$this_dir/skills/workflow-orchestrator/templates" -type f -name '*-todo.md' | grep -q .; then
-  find "$this_dir/skills/workflow-orchestrator/templates" -type f -name '*-todo.md' >&2
+if [ -d "$skills_dir/workflow-orchestrator/templates" ] &&
+  find "$skills_dir/workflow-orchestrator/templates" -type f -name '*-todo.md' | grep -q .; then
+  find "$skills_dir/workflow-orchestrator/templates" -type f -name '*-todo.md' >&2
   fail "Legacy workflow-orchestrator todo templates are still present."
 fi
 

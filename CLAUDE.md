@@ -2,18 +2,6 @@
 
 学习笔记自动化生产系统。
 
-## Codex / Claude Code 同步
-
-本项目同时维护 `.codex/` 与 `.claude/` 两套配置。当前约定是：
-
-1. 新增或修改工作流能力时，优先改 `.codex/`。
-2. 改完后运行：
-   ```bash
-   .codex/scripts/sync-codex-to-claude.sh
-   ```
-3. 同步脚本会把可迁移的 skills、agents、rules、scripts 复制到 `.claude/`，并把路径从 `.codex` 转成 `.claude`。
-4. Claude Code 专属 hooks 不由 Codex hooks 覆盖；详见 `.claude/rules/common/hooks.md`。
-
 ## 可用工作流
 
 每个工作流由「planner + orchestrator + workflow definition + state template」组成：
@@ -67,7 +55,7 @@ ${WORKSPACE_PATH:-./workspace}/
 
 ## 技能依赖关系
 
-完整编排流程见 `.claude/skills/workflow-orchestrator/SKILL.md`，各工作流的阶段执行流见 `.claude/workflows/{workflow-id}/workflow.md`。核心链路：
+核心链路：
 
 ```
 research-planner → workflow-orchestrator（生成命名 workflow state file）
@@ -103,3 +91,18 @@ research-planner → workflow-orchestrator（生成命名 workflow state file）
 | 已有一批旧笔记要接入项目 | 调用 `legacy-note-importer`，先盘点和生成迁移计划 |
 | 多篇旧笔记过时 | 调用 `batch-note-updater`，先生成更新清单和批量计划 |
 | 旧笔记过时 | 调用 `note-updater`，不要重跑完整新笔记流程 |
+
+## Workflow Todo State
+
+Named workflow state files are the source of truth for every routed workflow.
+
+- Workflow definitions live under `.claude/workflows/{workflow-id}/`.
+- Workflow state files live under `workspace/workflow-runs/` and should be named after the task.
+- Before any action that changes project files, runs project commands, or calls external services, read `.claude/rules/workflow-routing.md` and match the user's original request against its triggers and exclusions.
+- When a `Required: yes` workflow matches, read its `workflow.md`, create or resume its state file, and start the current phase before doing the work. Do not take the ordinary execution path instead.
+- If the route is ambiguous, ask the user before acting.
+- Read the active workflow state file before starting any phase; do not skip prerequisite phases.
+- Change phase state only through `.claude/scripts/todo-state.sh`.
+- Use one unique phase status line per phase, for example `> [P0] ⬜ 未开始`.
+- On resume after interruption, inspect the YAML frontmatter and current phase before acting.
+- Each workflow directory must contain a `routing.yaml`. After creating, changing, renaming, or deleting a workflow, run `.claude/scripts/sync-workflow-routing.sh`; the update is incomplete until `.claude/scripts/sync-workflow-routing.sh --check` passes.
