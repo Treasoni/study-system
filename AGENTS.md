@@ -60,6 +60,7 @@ batch-note-updater -> note-updater
 
 | Skill | Trigger |
 | --- | --- |
+| `note-starter` | 开始写笔记、启动写笔记、创建学习笔记、新主题笔记、start a learning note |
 | `research-planner` | 想学、帮我整理、研究一下、不知道从哪开始、explore topic |
 | `workflow-orchestrator` | 工作流、开始学习、新建学习项目、生成状态文件 |
 | `workflow-todo-state` | 可复用 workflow 状态机、命名状态文件、恢复流程、阶段状态脚本、workflow routing |
