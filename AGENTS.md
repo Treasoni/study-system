@@ -98,3 +98,19 @@ batch-note-updater -> note-updater
 - 不硬编码用户机器绝对路径到项目产物中。
 - 编辑前先检查 `git status --short`，不要覆盖用户未提交改动。
 - Git 提交消息遵守 `.codex/rules/common/git-workflow.md`。
+
+<!-- env-template:codex:begin -->
+## Environment Variables
+
+- Follow `.codex/rules/common/env.md` whenever creating, updating, migrating, or auditing `.env`, `.env.example`, or environment-variable documentation.
+- Keep committed env templates minimal, project-specific, and free of real secrets or machine-local absolute paths.
+- After env template changes, run `.codex/scripts/check-env-template.sh`. Use `--strict` when you want unused documented variables to fail the check.
+<!-- env-template:codex:end -->
+
+<!-- prompt-cache-bootstrap:codex:begin -->
+## Prompt Cache
+
+- Follow `.codex/rules/common/prompt-cache.md` for high-frequency prompt design.
+- Keep stable instructions and output formats before dynamic user input, file excerpts, dates, IDs, and runtime state.
+- Reuse canonical templates and load long context only when needed.
+<!-- prompt-cache-bootstrap:codex:end -->
